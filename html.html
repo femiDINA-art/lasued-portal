@@ -1,0 +1,3041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LASUED Theatre Arts — Course Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root{--p1:#1E0035;--p2:#4A0082;--p3:#6B2FB0;--p4:#9B5FD0;--p5:#C9A8E8;
+--g1:#A07010;--g2:#C9922E;--g3:#E8B94A;--g4:#FFF4DC;
+--sv:#B8B8D0;--svl:#EAEAF5;--cr:#F8F5FF;--ww:#FFFDFF;
+--dk:#150025;--mid:#4A1060;--mt:#8070A0;--br:#DDD0EE;
+--su:#1F6B3A;--er:#B02020}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--dk);min-height:100vh}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',serif}
+input,select,textarea,button{font-family:'DM Sans',sans-serif}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--p4);border-radius:3px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;transition:all .2s;border:none;white-space:nowrap}
+.btn-p{background:var(--p2);color:#fff}.btn-p:hover{background:var(--p1)}
+.btn-g{background:linear-gradient(135deg,var(--g2),var(--g3));color:#fff}
+.btn-o{background:transparent;border:1.5px solid var(--p2);color:var(--p2)}.btn-o:hover{background:var(--p2);color:#fff}
+.btn-sv{background:linear-gradient(135deg,#C0C0D8,#A8A8C0);color:var(--p1)}
+.btn-gh{background:transparent;border:1.5px solid var(--br);color:var(--mt)}.btn-gh:hover{background:var(--svl)}
+.btn-d{background:var(--er);color:#fff}.btn-sm{padding:7px 13px;font-size:13px}.btn-full{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+#notif{position:fixed;top:18px;right:18px;z-index:9999;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:500;box-shadow:0 6px 24px rgba(0,0,0,.2);display:none;animation:sIn .3s ease;max-width:340px}
+#notif.show{display:block}.notif-ok{background:var(--su);color:#fff}.notif-err{background:var(--er);color:#fff}.notif-info{background:var(--p2);color:#fff}
+@keyframes sIn{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+.fg{margin-bottom:15px}.fg label{display:block;font-size:11.5px;font-weight:600;color:var(--mid);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 14px;border:1.5px solid var(--br);border-radius:8px;font-size:14px;background:var(--cr);color:var(--dk);outline:none;transition:all .2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--p2);background:#fff;box-shadow:0 0 0 3px rgba(74,0,130,.08)}
+.fg textarea{resize:vertical;min-height:80px}
+/* AUTH */
+.auth{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:780px){.auth{grid-template-columns:1fr}}
+.auth-l{background:linear-gradient(160deg,var(--p1) 0%,var(--p2) 55%,var(--mid) 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 40px;color:#fff;position:relative;overflow:hidden}
+.auth-l::after{content:'✦';position:absolute;bottom:30px;right:30px;font-size:120px;opacity:.04;color:var(--g3)}
+.auth-logos{display:flex;gap:14px;align-items:center;margin-bottom:22px}
+.alo{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.45);text-align:center;cursor:pointer;overflow:hidden;transition:all .2s}
+.alo:hover{background:rgba(255,255,255,.18)}.alo img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.gdiv{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--g3),transparent);margin:0 auto 18px}
+.auth-l h1{font-size:24px;text-align:center;line-height:1.3;color:#fff;margin-bottom:6px}
+.auth-l .inst{font-size:12px;color:rgba(255,255,255,.6);text-align:center;line-height:1.75}
+.auth-feats{margin-top:26px;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.05);max-width:255px;width:100%}
+.auth-feats h3{font-size:13px;color:var(--g3);margin-bottom:8px}
+.auth-feats li{list-style:none;font-size:12px;color:rgba(255,255,255,.7);padding:3px 0}
+.auth-feats li::before{content:'◆ ';color:var(--g2);font-size:9px}
+.auth-r{background:var(--ww);display:flex;align-items:center;justify-content:center;padding:60px 40px}
+@media(max-width:780px){.auth-r{padding:40px 24px}.auth-l{padding:40px 24px;min-height:260px}}
+.af{width:100%;max-width:390px}.af h2{font-size:30px;color:var(--p1);margin-bottom:5px}
+.af .sub{color:var(--mt);font-size:13px;margin-bottom:24px}
+.rrow{display:flex;gap:8px;margin-bottom:20px}.rr{flex:1;padding:9px;border:1.5px solid var(--br);border-radius:8px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;color:var(--mt)}.rr.on{border-color:var(--p2);background:var(--p2);color:#fff}
+.asw{text-align:center;margin-top:14px;font-size:13px;color:var(--mt)}.asw span{color:var(--p2);cursor:pointer;font-weight:600}
+.nbox{background:var(--g4);border:1px solid var(--g2);border-radius:8px;padding:11px 14px;font-size:12.5px;color:#7A5010;margin-bottom:15px}
+.nbox.pur{background:rgba(74,0,130,.06);border-color:var(--p3);color:var(--mid)}
+.fl{text-align:right;margin-top:-10px;margin-bottom:12px;font-size:12.5px}.fl span{color:var(--p2);cursor:pointer;font-weight:500}
+/* PORTAL */
+.portal{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+@media(max-width:880px){.portal{grid-template-columns:1fr}}
+.sidebar{background:var(--p1);color:#fff;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+@media(max-width:880px){.sidebar{display:none;position:fixed;inset:0;z-index:500;width:250px}}.sidebar.open{display:flex}
+.sl{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+.sl-ic{width:38px;height:38px;background:linear-gradient(135deg,var(--g2),var(--g3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.sl-t h3{font-size:13px;color:#fff;line-height:1.2}.sl-t span{font-size:10px;color:rgba(255,255,255,.4)}
+.sl-lg{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.06);align-items:center}
+.sl-lgt{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,.35);overflow:hidden;flex-shrink:0;cursor:pointer}
+.sl-lgt img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.snav{padding:13px 10px;flex:1}.ns{margin-bottom:18px}
+.nst{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.32);padding:0 8px;margin-bottom:6px}
+.ni{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.68);margin-bottom:1px;transition:all .2s}
+.ni:hover{background:rgba(255,255,255,.07);color:#fff}.ni.on{background:linear-gradient(135deg,var(--g2),var(--g1));color:#fff;font-weight:600}
+.ni .bx{margin-left:auto;background:var(--er);color:#fff;font-size:9px;padding:2px 6px;border-radius:10px}
+.sftr{padding:12px 10px;border-top:1px solid rgba(255,255,255,.08)}
+.uchip{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;background:rgba(255,255,255,.06)}
+.uav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--g2),var(--g3));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--p1);flex-shrink:0}
+.uinfo h4{font-size:13px;color:#fff;line-height:1.2}.uinfo span{font-size:10px;color:rgba(255,255,255,.4);text-transform:capitalize}
+.main{overflow:auto}
+.topbar{background:#fff;border-bottom:1px solid var(--br);padding:14px 26px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(74,0,130,.06)}
+.topbar h2{font-size:20px;color:var(--p1);flex:1}
+.mb{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--p2);padding:4px}
+@media(max-width:880px){.mb{display:block}}
+.sbar{display:flex;align-items:center;gap:7px;background:var(--cr);border:1.5px solid var(--br);border-radius:8px;padding:7px 12px}
+.sbar input{border:none;background:transparent;font-size:13.5px;outline:none;width:150px;color:var(--dk)}
+.content{padding:26px}@media(max-width:600px){.content{padding:14px}}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:24px}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}}
+.sc{background:#fff;border:1px solid var(--br);border-radius:12px;padding:18px;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc.purple::before{background:linear-gradient(90deg,var(--p2),var(--p4))}.sc.gold::before{background:linear-gradient(90deg,var(--g1),var(--g3))}
+.sc.silver::before{background:linear-gradient(90deg,#909090,#C0C0C0)}.sc.green::before{background:var(--su)}.sc.red::before{background:var(--er)}
+.sc .sic{font-size:24px;margin-bottom:8px}.sc .sn{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:var(--p2)}
+.sc.gold .sn{color:var(--g1)}.sc .sl-{font-size:12px;color:var(--mt);margin-top:2px}
+/* COURSES */
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:800px){.cgrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.cgrid{grid-template-columns:1fr}}
+.cc{background:#fff;border:1px solid var(--br);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .25s}
+.cc:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(74,0,130,.13)}
+.cc-h{padding:18px 18px 14px;color:#fff;position:relative;min-height:90px}
+.cc-h::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,.3),transparent)}
+.cc-h::after{content:attr(data-ic);position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:34px;opacity:.2}
+.cc-code{font-size:11px;font-weight:600;opacity:.85;letter-spacing:.5px;margin-bottom:3px;position:relative}
+.cc-h h3{font-size:15px;line-height:1.3;position:relative;font-family:'Cormorant Garamond',serif}
+.cc-b{padding:12px 16px}.cc-m{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.lvl{background:rgba(74,0,130,.08);color:var(--p2);font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px}
+.sts{font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px}
+.sts-C{background:#E8F5E9;color:#1F6B3A}.sts-E{background:#FFF4DC;color:var(--g1)}.sts-R{background:#EDE7F6;color:var(--p2)}
+.cc-f{padding:9px 16px;border-top:1px solid var(--br);display:flex;justify-content:space-between;font-size:11px;color:var(--mt)}
+/* PANELS */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap}.sh h3{font-size:20px;color:var(--p1)}
+.panel{background:#fff;border:1px solid var(--br);border-radius:12px;padding:20px;margin-bottom:14px}
+.panel h3{font-size:18px;color:var(--p1);margin-bottom:14px}
+.prow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--br);font-size:13.5px;gap:10px}
+.prow:last-child{border:none}.prow span:first-child{color:var(--mt)}.prow span:last-child{font-weight:500;text-align:right}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:600px){.g2{grid-template-columns:1fr}}
+.back{display:inline-flex;align-items:center;gap:5px;color:var(--p2);font-size:13px;cursor:pointer;margin-bottom:16px;font-weight:500}
+.back:hover{text-decoration:underline}
+.empty{text-align:center;padding:44px 20px;color:var(--mt)}.empty .ei{font-size:44px;margin-bottom:10px}.empty h4{font-size:18px;color:var(--mid);margin-bottom:5px}
+/* COURSE HERO + TABS */
+.chero{padding:26px;border-radius:14px;margin-bottom:20px;position:relative;overflow:hidden;color:#fff}
+.chero::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,.3),transparent)}
+.chero::after{content:attr(data-ic);position:absolute;right:26px;top:50%;transform:translateY(-50%);font-size:72px;opacity:.1}
+.chero p.cl{font-size:11px;opacity:.75;margin-bottom:4px;position:relative}.chero h2{font-size:24px;margin-bottom:5px;position:relative;font-family:'Cormorant Garamond',serif}
+.chero p.cm{font-size:13px;opacity:.68;position:relative}
+.ctabs{display:flex;border-bottom:2px solid var(--br);margin-bottom:20px;overflow-x:auto;gap:0}
+.ctab{padding:10px 17px;cursor:pointer;font-size:13px;font-weight:500;color:var(--mt);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
+.ctab.on{color:var(--p2);border-bottom-color:var(--p2);font-weight:600}.ctab:hover{color:var(--p2)}
+/* FORUM */
+.thread{background:#fff;border:1px solid var(--br);border-radius:12px;padding:17px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.thread:hover{border-color:var(--p3);box-shadow:0 3px 14px rgba(74,0,130,.07)}
+.tmeta{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px}
+.tav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.tav.student{background:var(--g4);color:var(--g1)}.tav.lecturer{background:var(--p2);color:#fff}
+.tinfo h4{font-size:14px;font-weight:600;color:var(--dk);line-height:1.3}.tinfo .ts{font-size:11px;color:var(--mt);margin-top:2px}
+.tbody{font-size:13px;color:#555;line-height:1.6}
+.rbox{background:var(--cr);border-radius:10px;padding:14px;margin-top:13px}
+.repl{border-left:3px solid var(--br);padding:9px 12px;margin-bottom:8px;border-radius:0 8px 8px 0;background:#fff}
+.repl.lecturer{border-left-color:var(--p2)}.rau{font-size:11.5px;font-weight:600;color:var(--p2);margin-bottom:3px}.rb{font-size:13px;color:#444;line-height:1.5}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+.tag-student{background:var(--g4);color:var(--g1)}.tag-lecturer{background:rgba(74,0,130,.1);color:var(--p2)}
+.rep-ta{width:100%;padding:9px 12px;border:1.5px solid var(--br);border-radius:8px;font-size:13px;outline:none;resize:vertical;min-height:60px;transition:border .2s;color:var(--dk);background:#fff}
+.rep-ta:focus{border-color:var(--p2)}
+/* ASSIGNMENTS */
+.acard{background:#fff;border:1px solid var(--br);border-radius:12px;padding:18px;margin-bottom:13px}
+.ahead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
+.atitle{font-size:15px;font-weight:600;color:var(--dk);font-family:'Cormorant Garamond',serif}
+.ameta{font-size:12px;color:var(--mt);margin-top:2px}.due-b{background:var(--g4);color:var(--g1);font-size:12px;font-weight:600;padding:4px 10px;border-radius:6px;flex-shrink:0}
+.adesc{font-size:13px;color:#555;line-height:1.7}
+.slist{margin-top:13px;border-top:1px solid var(--br);padding-top:12px}
+.sitem{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--br);gap:8px;flex-wrap:wrap}
+.sitem:last-child{border:none}.sname{font-size:13px;font-weight:500}.smeta{font-size:11px;color:var(--mt)}
+.sub-ok{margin-top:11px;padding:10px 14px;background:#D4EFDF;border-radius:8px;font-size:12.5px;color:#1A6B3A;line-height:1.6}
+/* GRADES */
+.gc{font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px}
+.gc.a{background:#D4EFDF;color:#1A6B3A}.gc.b{background:#D4E8F5;color:#1A507A}
+.gc.c{background:var(--g4);color:var(--g1)}.gc.d{background:#FAE5D3;color:#8B3A1A}.gc.f{background:#FADBD8;color:#8B2020}.gc.p{background:var(--cr);color:var(--mt)}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;overflow-y:auto}
+.modal{background:#fff;border-radius:16px;padding:28px;max-width:460px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.22);margin:auto}
+.modal h3{font-size:22px;color:var(--p1);margin-bottom:16px}.mftr{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.gprev{background:var(--cr);border:1px solid var(--br);border-radius:8px;padding:10px 14px;font-size:14px;margin-bottom:14px}
+.gprev strong{color:var(--p2);font-size:18px}
+/* RESULTS */
+.rtw{overflow-x:auto;border-radius:12px;border:1px solid var(--br)}
+.rtbl{width:100%;border-collapse:collapse}
+.rtbl th{background:var(--p1);color:#fff;padding:11px 13px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.rtbl td{padding:10px 13px;font-size:13px;border-bottom:1px solid var(--br);background:#fff}
+.rtbl tr:last-child td{border:none}.rtbl tr:hover td{background:var(--cr)}
+/* ATTENDANCE */
+.att-code-box{background:var(--p1);color:#fff;border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
+.att-code-box::before{content:'📋';position:absolute;right:20px;top:20px;font-size:60px;opacity:.08}
+.att-code{font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:700;letter-spacing:10px;color:var(--g3);margin:16px 0}
+.att-code-label{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px}
+.att-code-tip{font-size:12px;color:rgba(255,255,255,.5);margin-top:8px}
+.att-status-open{display:inline-flex;align-items:center;gap:6px;background:rgba(31,107,58,.3);border:1px solid rgba(31,107,58,.5);color:#7FFFB0;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:8px}
+.att-status-closed{display:inline-flex;align-items:center;gap:6px;background:rgba(176,32,32,.3);color:#FFB0B0;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px}
+.att-chip{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px}
+.att-present{background:#D4EFDF;color:#1A6B3A}.att-late{background:#FEF3E2;color:var(--g1)}.att-absent{background:#FADBD8;color:#8B2020}.att-unmarked{background:var(--cr);color:var(--mt)}
+.att-student-entry{background:linear-gradient(135deg,rgba(74,0,130,.06),rgba(74,0,130,.1));border:2px solid var(--p3);border-radius:14px;padding:24px;text-align:center;margin-bottom:20px}
+.att-student-entry h3{font-size:22px;color:var(--p1);margin-bottom:8px}.att-student-entry p{font-size:13px;color:var(--mt);margin-bottom:18px}
+.att-code-input{font-family:'Cormorant Garamond',serif;font-size:32px;letter-spacing:8px;text-align:center;background:#fff;border:2px solid var(--p2);border-radius:10px;padding:14px;color:var(--p1);text-transform:uppercase;width:100%;max-width:280px;outline:none}
+.att-code-input:focus{box-shadow:0 0 0 4px rgba(74,0,130,.1)}
+.att-reg-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--br);font-size:13px;gap:10px}
+.att-reg-row:last-child{border:none}.att-reg-name{font-weight:500}.att-reg-meta{font-size:11px;color:var(--mt)}
+.att-action-btns{display:flex;gap:6px;flex-wrap:wrap}
+.att-sm{padding:5px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:none;font-weight:600;transition:all .2s}
+.att-sm-p{background:#D4EFDF;color:#1A6B3A}.att-sm-p:hover{background:#B8E0C8}
+.att-sm-l{background:#FEF3E2;color:var(--g1)}.att-sm-l:hover{background:#FDEBD0}
+.att-sm-a{background:#FADBD8;color:#8B2020}.att-sm-a:hover{background:#F5C6C6}
+.att-summary-card{background:#fff;border:1px solid var(--br);border-radius:12px;padding:16px;margin-bottom:10px}
+.cf{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.cf-btn{padding:6px 13px;border:1.5px solid var(--br);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;color:var(--mt);background:#fff}
+.cf-btn.on{border-color:var(--p2);background:var(--p2);color:#fff}
+/* MATERIALS */
+.file-item{display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fff;border:1px solid var(--br);border-radius:10px;margin-bottom:9px;transition:all .2s}
+.file-item:hover{border-color:var(--p3);box-shadow:0 2px 10px rgba(74,0,130,.06)}
+.file-item.pending{opacity:.7;border-style:dashed}
+.uz{border:2px dashed var(--br);border-radius:12px;padding:28px;text-align:center;margin-bottom:16px;cursor:pointer;transition:all .2s;background:rgba(74,0,130,.02)}
+.uz:hover{border-color:var(--p3);background:rgba(74,0,130,.04)}
+/* ANNOUNCEMENTS */
+.ac{background:linear-gradient(135deg,#FFF8F0,var(--g4));border:1px solid var(--g2);border-radius:12px;padding:18px;margin-bottom:12px}
+.ac.urgent{border-color:var(--er);background:linear-gradient(135deg,#FFF5F5,#FEECEC)}
+.ac h4{font-size:16px;color:var(--p1);margin-bottom:6px;font-family:'Cormorant Garamond',serif}.ac p{font-size:13px;color:#555;line-height:1.7}
+.ac .amt{font-size:11px;color:var(--mt);margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ctag{font-size:10.5px;font-weight:700;background:var(--p1);color:#fff;padding:2px 8px;border-radius:4px}
+.div{height:1px;background:var(--br);margin:16px 0}
+/* PROFILE */
+.pcard{background:#fff;border:1px solid var(--br);border-radius:14px;overflow:hidden;max-width:490px}
+.pcb{height:70px;background:linear-gradient(135deg,var(--p1),var(--p2),var(--p3))}
+.pcbody{padding:18px}.pav{width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,var(--g2),var(--g3));display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:var(--p1);border:4px solid #fff;margin-top:-46px;margin-bottom:10px}
+.pname{font-size:22px;color:var(--dk);font-family:'Cormorant Garamond',serif}.prole{font-size:13px;color:var(--mt);text-transform:capitalize;margin-bottom:14px}
+
+/* SHOW PASSWORD */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:42px}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:17px;color:var(--mt);user-select:none;line-height:1}
+.pw-eye:hover{color:var(--p2)}
+.pw-check-row{display:flex;align-items:center;gap:7px;margin-top:-10px;margin-bottom:13px;font-size:13px;color:var(--mt);cursor:pointer}
+.pw-check-row input[type=checkbox]{width:14px;height:14px;accent-color:var(--p2);cursor:pointer}
+</style>
+
+  <!-- Firebase SDK (compat version for simplicity) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<img id="UNILOGO" src=getLogo("UNILOGO") style="display:none"><img id="THALOGO" src=getLogo("UNILOGO") style="display:none">
+<div id="notif"></div>
+<div id="ovm"></div>
+<div id="app"></div>
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// FIREBASE INITIALIZATION (Stage 2, Step 1: Authentication only)
+// ════════════════════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBcavaf_LcLtV6WVJjVPDGPeFB1_qBOVMA",
+  authDomain: "lasued-theatre-portal.firebaseapp.com",
+  projectId: "lasued-theatre-portal",
+  storageBucket: "lasued-theatre-portal.firebasestorage.app",
+  messagingSenderId: "754311368197",
+  appId: "1:754311368197:web:75f26bb90000b85408166c",
+  measurementId: "G-M4T20ZML47"
+};
+
+let fbAuth = null;
+let fbDB = null;
+let fbReady = false;
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  fbAuth = firebase.auth();
+  fbDB = firebase.firestore();
+  fbReady = true;
+  console.log("✓ Firebase initialized — connected to lasued-theatre-portal");
+} catch(err) {
+  console.error("✗ Firebase initialization failed:", err);
+  fbReady = false;
+}
+
+// Special: lecturer email is hardcoded as the only lecturer account
+const LECTURER_EMAIL = "oremi@lasued.edu.ng";
+
+
+// ═══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════
+const CFG={
+  name:"Òré Mi",email:"oremi@lasued.edu.ng",password:"Theatre@LASUED26",
+  dept:"Department of Theatre Arts",college:"College of Humanities Education",
+  school:"Lagos State University of Education",
+  addr1:"Oto/Ijanikin, Lagos",addr2:"Campus: Inaforija-Epe, Lagos",
+  session:"2025/2026 — Second Semester",graceMins:10
+};
+
+// ═══════════════════════════════════════════════════════
+// COURSES — corrected titles, units, status
+// C=Compulsory, E=Elective, R=Required
+// ═══════════════════════════════════════════════════════
+const COURSES=[
+  {code:"THA 125",title:"Introduction to Creative Writing: Elements and Principles",
+   level:"100L",students:164,units:2,status:"C",bg:"#4A0082",ic:"✍️",
+   desc:"Introduces students to diverse forms and conventions of creative writing — short fiction, poetry, personal essays, and experimental forms. Students engage in weekly workshops, peer critique, and individual portfolio development."},
+  {code:"THA 222",title:"Fundamentals of Playwriting",
+   level:"200L",students:159,units:2,status:"C",bg:"#2D006E",ic:"🎭",
+   desc:"A comprehensive study of the craft of playwriting, examining dramatic structure, dialogue, character construction, and the playwright's relationship to stage performance. Students write and workshop original scripts drawing on African theatrical traditions."},
+  {code:"THA 302",title:"Research Methods and Materials in Theatre and Media",
+   level:"300L",students:87,units:2,status:"C",bg:"#3A0070",ic:"🔬",
+   desc:"An examination of research methodologies applicable to theatre and media studies. Students learn qualitative and quantitative approaches, archival research, fieldwork, and the conventions of scholarly writing in the performing arts."},
+  {code:"THA 326",title:"Film Production Management",
+   level:"300L",students:94,units:2,status:"E",bg:"#1A0055",ic:"🎬",
+   desc:"A practical and theoretical study of film production management: pre-production planning, budgeting, scheduling, crew organisation, location management, and post-production coordination. Students develop a complete production plan."},
+  {code:"THA 404",title:"Contemporary African Theatre",
+   level:"400L",students:61,units:2,status:"R",bg:"#0D0045",ic:"🏛️",
+   desc:"An advanced seminar on contemporary African theatre with focus on Danai Gurira, Yael Farber, Femi Osofisan, and Inua Ellams. Students engage in close textual analysis, performance criticism, and original dramaturgical research."},
+  {code:"THA 422",title:"Film Project",
+   level:"400L",students:55,units:2,status:"E",bg:"#2A0058",ic:"🎥",
+   desc:"A capstone production course in which students conceive, plan, and execute an original short film from development through post-production. The course integrates all skills developed across the programme."},
+];
+
+// ═══════════════════════════════════════════════════════
+// STUDENT ROSTER — THA 125 (64) + THA 222 (60)
+// ═══════════════════════════════════════════════════════
+const ROSTER=[
+  ...[["Adebayo, Oluwaseun T.","251105010001"],["Afolabi, Blessing C.","251105010002"],["Agboola, Temitope R.","251105010003"],["Ajayi, Damilola F.","251105010004"],["Akande, Fatimah O.","251105010005"],["Akintola, Seun O.","251105010006"],["Alabi, Precious N.","251105010007"],["Ameh, Chinwe R.","251105010008"],["Animashaun, Kolade J.","251105010009"],["Aremu, Fatima B.","251105010010"],["Asake, Olumide C.","251105010011"],["Awoleke, Taiwo S.","251105010012"],["Ayodele, Grace E.","251105010013"],["Babatunde, Adunola S.","251105010014"],["Bamidele, Chukwuemeka P.","251105010015"],["Bello, Zainab A.","251105010016"],["Coker, Oluwafemi R.","251105010017"],["Dada, Titilayo M.","251105010018"],["Dawodu, Kehinde V.","251105010019"],["Eze, Chukwuma K.","251105010020"],["Fadare, Adekunle G.","251105010021"],["Fashola, Morenike T.","251105010022"],["Folarin, Ibukun A.","251105010023"],["Gbadegesin, Rotimi O.","251105010024"],["Hassan, Aisha M.","251105010025"],["Ibrahim, Yetunde F.","251105010026"],["Ihejirika, Chisom B.","251105010027"],["Iwu, Emeka D.","251105010028"],["Jemibewon, Tunde C.","251105010029"],["Johnson, Adaeze N.","251105010030"],["Kadiri, Muftau O.","251105010031"],["Kayode, Sade A.","251105010032"],["Lawal, Maryam T.","251105010033"],["Makinde, Adesola F.","251105010034"],["Mohammed, Hauwa B.","251105010035"],["Nwafor, Chidinma E.","251105010036"],["Nwankwo, Obiora S.","251105010037"],["Obasi, Ngozi C.","251105010038"],["Obi, Emeka T.","251105010039"],["Odunbaku, Feranmi A.","251105010040"],["Ogundimu, Sola R.","251105010041"],["Ogunleye, Bolanle T.","251105010042"],["Ogunwale, Adewale M.","251105010043"],["Ojeme, Ifeanyi B.","251105010044"],["Oke, Oluwakemi S.","251105010045"],["Okonkwo, Chiamaka F.","251105010046"],["Oladele, Tolulope A.","251105010047"],["Oladimeji, Adeyemi C.","251105010048"],["Olaleye, Taiwo E.","251105010049"],["Olawale, Funmilayo R.","251105010050"],["Olorunfemi, Destiny A.","251105010051"],["Oluwadare, Ayobami S.","251105010052"],["Omole, Kolade B.","251105010053"],["Omotunde, Adewunmi F.","251105010054"],["Onileowo, Seun T.","251105010055"],["Orji, Chidera C.","251105010056"],["Oshodi, Temilade A.","251105010057"],["Owolabi, Akeem R.","251105010058"],["Oyewole, Bukola T.","251105010059"],["Salami, Rashidat O.","251105010060"],["Sanni, Aminat B.","251105010061"],["Shittu, Hakeem F.","251105010062"],["Taiwo, Olumuyiwa A.","251105010063"],["Yusuf, Fatima T.","251105010064"]].map(([n,m])=>({name:n,matric:m,course:"THA 125"})),
+  ...[["Adebanjo, Oluwasegun R.","231105010001"],["Adegoke, Temi A.","231105010002"],["Adeniyi, Seun B.","231105010003"],["Adeola, Wunmi T.","231105010004"],["Adeosun, Babatunde C.","231105010005"],["Adepoju, Folake M.","231105010006"],["Adesanya, Kemi O.","231105010007"],["Adesiji, Rotimi F.","231105010008"],["Adetayo, Modupe A.","231105010009"],["Adeyemi, Tunde S.","231105010010"],["Agiri, Abayomi C.","231105010011"],["Ahmed, Ramota F.","231105010012"],["Ajayi, Olumide T.","231105010013"],["Akinwale, Seun R.","231105010014"],["Eze, Chidinma K.","231105010015"],["Fadare, Adekunle G.","231105010016"],["Gbadamosi, Toyin A.","231105010017"],["Hassan, Mubarak S.","231105010018"],["Ibiwoye, Tope C.","231105010019"],["Idowu, Temi R.","231105010020"],["Igbinosa, Osas T.","231105010021"],["Ijale, Funmi A.","231105010022"],["Ilesanmi, Lola B.","231105010023"],["Iroegbulem, Kelechi C.","231105010024"],["Isola, Wale F.","231105010025"],["Jimoh, Fatimah T.","231105010026"],["Kareem, Rashid O.","231105010027"],["Kehinde, Adeola S.","231105010028"],["Kolawole, Abiodun T.","231105010029"],["Lawal, Tunde B.","231105010030"],["Lawson, Emeka C.","231105010031"],["Muhammed, Aisha F.","231105010032"],["Nwachukwu, Adaeze R.","231105010033"],["Nwokedi, Obiageli T.","231105010034"],["Odewale, Seun A.","231105010035"],["Oduntan, Toye R.","231105010036"],["Ogundipe, Bimbo C.","231105010037"],["Ogunlewe, Temitope A.","231105010038"],["Ojeah, Chiamaka S.","231105010039"],["Ojukwu, Chidi T.","231105010040"],["Okeke, Amaka B.","231105010041"],["Okereke, Nkechi F.","231105010042"],["Okonkwu, Emeka T.","231105010043"],["Okorie, Chukwudi A.","231105010044"],["Okwu, Ngozi S.","231105010045"],["Olajide, Sade R.","231105010046"],["Olawale, Tunde C.","231105010047"],["Olayemi, Funke A.","231105010048"],["Olusegun, Bayo T.","231105010049"],["Oluwafemi, Damilare B.","231105010050"],["Omidiji, Toluwani F.","231105010051"],["Omoruyi, Osaze T.","231105010052"],["Omosanya, Bisi R.","231105010053"],["Onyeka, Chisom A.","231105010054"],["Oshinowo, Lola T.","231105010055"],["Owoeye, Wale B.","231105010056"],["Oyebode, Tunde C.","231105010057"],["Shabi, Bisi A.","231105010058"],["Sobande, Yetunde T.","231105010059"],["Williams, Adebola R.","231105010060"]].map(([n,m])=>({name:n,matric:m,course:"THA 222"})),
+];
+
+// ═══════════════════════════════════════════════════════
+// KNOWN MATERIALS — pre-generated documents to upload
+// ═══════════════════════════════════════════════════════
+const KNOWN=[
+  {course:"THA 125",items:[
+    "10-Week Course Syllabus with assessment criteria and reading list",
+    "Week 1 Handout — Introduction: What is Creative Writing?",
+    "Week 2 Handout — The Short Story: Narrative & Structure",
+    "Week 3 Handout — Character Voice vs Narrative Voice",
+    "Week 4 Handout — Poetry: Forms and Techniques",
+    "Week 5 Handout — Personal Essay & Memoir",
+    "Week 6 Handout — Flash Fiction & Experimental Forms",
+    "Week 7 Handout — Dialogue and Scene Writing",
+    "Week 8 Handout — Revision and the Writing Process",
+    "Week 9 Handout — Publishing and the Creative Writer",
+    "Week 10 Handout — Portfolio and Final Presentation",
+    "13 Group Project Briefs (one per creative form)",
+    "Grading Rubric for Creative Writing Assignments",
+    "Peer Critique Form",
+    "Self-Assessment Tool",
+    "Student Group Assignment Document (164 students in named groups)",
+    "Claude Capability Worksheets (16 sheets with study questions)",
+  ]},
+  {course:"THA 222",items:[
+    "9-Week Course Syllabus with weekly breakdown",
+    "Week 1 Student Notes — What is a Play?",
+    "Week 2 Student Notes — Dramatic Structure",
+    "Week 3 Student Notes — Character and Motivation",
+    "Week 4 Student Notes — Dialogue",
+    "Week 5 Student Notes — Stage Directions and Space",
+    "Week 6 Student Notes — African Theatrical Traditions",
+    "Week 7 Student Notes — The One-Act Form",
+    "Week 8 Student Notes — Revision of Scripts",
+    "Week 9 Student Notes — From Script to Stage",
+    "Fill-in Recall Questions for each week",
+    "6 Group Project Briefs (Stage Play, Film Script, TV Series, Radio Play, etc.)",
+    "Production Groups Document (4 Actualization Crews, named roles)",
+    "Late-Registration Group — Docudrama 10-Week Production Timeline",
+    "Student Group Assignment Document (159 students)",
+  ]},
+  {course:"THA 404",items:[
+    "10-Week Course Syllabus — Contemporary African Theatre",
+    "Seminar Tables: Danai Gurira, Yael Farber, Femi Osofisan, Inua Ellams",
+    "Practical Activities Schedule",
+    "Curated Resource Links and Bibliography",
+    "Week-by-Week Study Guide",
+  ]},
+  {course:"THA 302",items:[]},
+  {course:"THA 326",items:[]},
+  {course:"THA 422",items:[]},
+];
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let S={pg:"login",user:null,role:"",course:null,tab:"overview",regRole:"student",gradeCourse:"THA 125",attCourse:"THA 125",search:"",
+  testCourse:"THA 125",testTab:"all",
+  activeTest:null,activeTestStartedAt:null,activeAnswers:{},
+  gradingSub:null,
+  data:{users:[],threads:{},assignments:{},submissions:{},announcements:[],files:{},attendance:{},feedback:{},
+        tests:[],testSubs:[],qbank:[]}};
+let openTh=null;
+
+const PX="lp4_";
+function ls(k,d){try{const v=localStorage.getItem(PX+k);return v!==null?JSON.parse(v):d;}catch{return d;}}
+function ss(k,v){try{localStorage.setItem(PX+k,JSON.stringify(v));}catch{notify("Storage full","err");}}
+function ck(c){return c.replace(" ","")}
+
+function loadAll(){
+  if(!ls("init",false) || !ls("users",[]).find(u=>u.role==="lecturer")){
+    // Fresh init or broken state detected
+    localStorage.removeItem("lp4_init"); localStorage.removeItem("lp4_users");
+    const users=[{id:"lecturer",name:CFG.name,email:CFG.email,password:CFG.password,role:"lecturer",matric:"",secA:"theatre"}];
+    ROSTER.forEach(s=>{
+      // Support both array [name,matric] and object {name,matric} formats
+      const n = Array.isArray(s) ? s[0] : s.name;
+      const m = Array.isArray(s) ? s[1] : s.matric;
+      if(!n || !m) return;
+      users.push({id:"u"+m,name:n,email:m.toLowerCase().replace(/\//g,".")+"@student.lasued.edu.ng",
+        password:m,role:"student",matric:m,mustChange:true,secA:m.toLowerCase()});
+    });
+    ss("users",users);
+    ss("announcements",[
+      {id:1,title:"Welcome to the Theatre Arts Course Portal",course:"All Courses",date:"Apr 1, 2026",urgent:false,
+       body:"Welcome to the official portal for the Department of Theatre Arts. All course materials, assignments, forum discussions, and attendance records are managed here. Students: your default password is your matric number — please change it after your first login."},
+      {id:2,title:"End-of-Semester Submission Deadline",course:"All Courses",date:"Apr 10, 2026",urgent:true,
+       body:"All final projects and assignments must be submitted via this portal between April 25 and May 10, 2026. Physical submissions will not be accepted. Files must be labelled with your matric number. Late submissions attract a 5-mark deduction per day."},
+    ]);
+    COURSES.forEach(c=>{
+      const k=ck(c.code);
+      ss("threads-"+k,[]);ss("files-"+k,[]);ss("att-"+k,[]);
+      ss("assignments-"+k,
+        c.code==="THA 125"?[{id:1,title:"Group Creative Writing Project — 13 Forms",due:"Apr 25, 2026",max:40,desc:"Each group produces one creative work from their assigned form. Submit typed final draft + peer review sheet.",createdAt:"Apr 1, 2026"}]:
+        c.code==="THA 222"?[{id:1,title:"Original One-Act Play Script",due:"May 2, 2026",max:50,desc:"Write a one-act play (15–25 pages) with a minimum of two characters. Submit PDF with title page, character list, and full script.",createdAt:"Apr 1, 2026"}]:
+        c.code==="THA 302"?[{id:1,title:"Research Proposal",due:"Apr 30, 2026",max:30,desc:"Submit a 1500-word research proposal on a topic in theatre or media. Include research questions, methodology, and preliminary bibliography.",createdAt:"Apr 1, 2026"}]:
+        c.code==="THA 326"?[{id:1,title:"Film Production Plan",due:"Apr 28, 2026",max:40,desc:"Develop a complete production plan for a 10-minute short film: script breakdown, schedule, budget, crew list, and location report.",createdAt:"Apr 1, 2026"}]:
+        c.code==="THA 404"?[{id:1,title:"Seminar Presentation — Contemporary Playwright",due:"May 5, 2026",max:30,desc:"15-minute group presentation on one playwright from the course syllabus. Submit slide deck and annotated bibliography.",createdAt:"Apr 1, 2026"}]:
+        [{id:1,title:"Film Project — Final Submission",due:"May 8, 2026",max:50,desc:"Submit your completed short film (MP4) plus a 500-word production diary and full credits list.",createdAt:"Apr 1, 2026"}]
+      );
+      ss("submissions-"+k,[]);
+      ss("feedback-"+k,[]);
+    });
+    ss("init",true);
+  }
+  S.data.users=ls("users",[]);
+  S.data.announcements=ls("announcements",[]);
+  COURSES.forEach(c=>{
+    const k=ck(c.code);
+    S.data.threads[k]=ls("threads-"+k,[]);
+    S.data.assignments[k]=ls("assignments-"+k,[]);
+    S.data.submissions[k]=ls("submissions-"+k,[]);
+    S.data.feedback[k]=ls("feedback-"+k,[]);
+    S.data.files[k]=ls("files-"+k,[]);
+    S.data.attendance[k]=ls("att-"+k,[]);
+  });
+  S.data.tests=ls("tests",[]);
+  S.data.testSubs=ls("testSubs",[]);
+  S.data.qbank=ls("qbank",[]);
+}
+
+function saveU(){ss("users",S.data.users)}
+function saveT(c){ss("threads-"+ck(c),S.data.threads[ck(c)])}
+function saveA(c){ss("assignments-"+ck(c),S.data.assignments[ck(c)])}
+function saveSub(c){ss("submissions-"+ck(c),S.data.submissions[ck(c)])}
+function saveF(c){ss("files-"+ck(c),S.data.files[ck(c)])}
+function saveAtt(c){ss("att-"+ck(c),S.data.attendance[ck(c)])}
+function saveAnn(){ss("announcements",S.data.announcements)}
+function saveTests(){ss("tests",S.data.tests)}
+function saveTestSubs(){ss("testSubs",S.data.testSubs)}
+function saveQbank(){ss("qbank",S.data.qbank)}
+
+
+function showPw(ids,cb){
+  const type=cb.checked?'text':'password';
+  (Array.isArray(ids)?ids:[ids]).forEach(id=>{const el=document.getElementById(id);if(el)el.type=type;});
+}
+function getLogo(id){var el=document.getElementById(id);return el?el.src:"";}
+function notify(m,t="ok"){
+  const el=document.getElementById("notif");
+  el.textContent=m;el.className="show notif-"+t;
+  clearTimeout(window._nt);window._nt=setTimeout(()=>el.className="",3500);
+}
+function grade(s){
+  if(s===null||s===undefined||s==="")return{l:"—",gp:"—",cl:"p"};
+  s=parseInt(s);
+  if(s>=70)return{l:"A",gp:"5.0",cl:"a"};if(s>=60)return{l:"B",gp:"4.0",cl:"b"};
+  if(s>=50)return{l:"C",gp:"3.0",cl:"c"};if(s>=45)return{l:"D",gp:"2.0",cl:"d"};
+  return{l:"F",gp:"0.0",cl:"f"};
+}
+function cobj(code){return COURSES.find(c=>c.code===code)}
+function dateNow(){return new Date().toLocaleString("en-NG",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
+function pendG(){let n=0;COURSES.forEach(c=>(S.data.submissions[ck(c.code)]||[]).forEach(s=>{if(s.grade===null||s.grade===undefined)n++;}));return n;}
+function totalA(){return COURSES.reduce((a,c)=>a+(S.data.assignments[ck(c.code)]||[]).length,0)}
+
+// ── AUTH ────────────────────────────────────────────────────
+
+function saveFeedback(code,aid,student){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const text=document.getElementById("fb-text-in")?.value.trim();
+  if(!text){notify("Write corrections first","err");return;}
+  const k=ck(code);
+  if(!S.data.feedback)S.data.feedback={};
+  if(!S.data.feedback[k])S.data.feedback[k]=[];
+  const existing=S.data.feedback[k].findIndex(f=>f.assignId===aid&&f.student===student);
+  const entry={assignId:aid,student,corrections:text,updatedAt:dateNow()};
+  if(existing>=0)S.data.feedback[k][existing]=entry;else S.data.feedback[k].push(entry);
+  ss("feedback-"+k,S.data.feedback[k]);closeM();render();notify("Corrections saved for "+student+".");
+}
+function openFeedbackModal(code,aid,student,assignTitle){
+  if(!S.data.feedback)S.data.feedback={};
+  const k=ck(code);if(!S.data.feedback[k])S.data.feedback[k]=ls("feedback-"+k,[]);
+  const existing=S.data.feedback[k].find(f=>f.assignId===aid&&f.student===student);
+  document.getElementById("ovm").innerHTML=`<div class="overlay" onclick="if(event.target===this)closeM()"><div class="modal"><h3>Write Corrections</h3>
+  <p style="font-size:13px;color:var(--mt);margin-bottom:13px"><strong>${student}</strong> · ${assignTitle}</p>
+  <div class="fg"><label>Corrections &amp; Suggestions (private — only this student sees this)</label>
+    <textarea id="fb-text-in" rows="9" placeholder="Write detailed corrections, inline comments, and suggestions here. The student will only see this on their private Feedback page.">${existing?existing.corrections:""}</textarea>
+  </div>
+  <div class="mftr"><button class="btn btn-gh btn-sm" onclick="closeM()">Cancel</button>
+    <button class="btn btn-p" onclick="saveFeedback('${code}',${aid},'${student.replace(/'/g,"\\'")}')">Save Corrections</button>
+  </div></div></div>`;
+}
+function rMyFeedback(){
+  if(!S.data.feedback)S.data.feedback={};
+  const allFb=[];
+  COURSES.forEach(c=>{
+    const k=ck(c.code);const fbList=S.data.feedback[k]||ls("feedback-"+k,[]);
+    fbList.filter(f=>f.student===S.user?.name).forEach(f=>{
+      const asgn=(S.data.assignments[k]||[]).find(a=>a.id===f.assignId);
+      allFb.push({...f,courseCode:c.code,courseTitle:c.title,assignTitle:asgn?.title||"Assignment"});
+    });
+  });
+  return `<div>
+  <p style="font-size:13px;color:var(--mt);margin-bottom:18px">Your lecturer\'s private corrections and suggestions on your submitted work. Only you can see this page.</p>
+  ${allFb.length===0?`<div class="empty"><div class="ei">✍️</div><h4>No corrections yet</h4><p>Corrections from your lecturer will appear here after your work is graded.</p></div>`:""}
+  ${allFb.map(f=>`<div style="background:#fff;border:1px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:14px">
+    <div style="padding:13px 18px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div><div style="font-size:15px;font-weight:600;color:var(--dk)">${f.assignTitle}</div>
+      <div style="font-size:12px;color:var(--mt);margin-top:2px">${f.courseCode} — ${f.courseTitle}</div></div>
+      <div style="font-size:11px;color:var(--mt)">Updated: ${f.updatedAt}</div>
+    </div>
+    <div style="padding:16px 18px">
+      <div style="background:rgba(74,0,130,.03);border:1px solid rgba(74,0,130,.12);border-radius:8px;padding:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--p2);margin-bottom:8px">✍️ Corrections &amp; Suggestions from ${CFG.name}</div>
+        <div style="font-size:13.5px;color:#333;line-height:1.8;white-space:pre-wrap">${f.corrections}</div>
+      </div>
+    </div>
+  </div>`).join("")}
+  </div>`;
+}
+async function doLogin(){
+  try {
+    if(!fbReady){alert("Firebase is not connected. Check your internet connection and reload the page.");return;}
+    
+    var emEl = document.getElementById("l-em");
+    var pwEl = document.getElementById("l-pw");
+    var em = emEl ? emEl.value.trim().toLowerCase() : "";
+    var pw = pwEl ? pwEl.value : "";
+    
+    if(!em){alert("Please enter your email.");if(emEl)emEl.focus();return;}
+    if(!pw){alert("Please enter your password.");if(pwEl)pwEl.focus();return;}
+    
+    var btn = document.querySelector("button[onclick=\"doLogin()\"]");
+    var origBtnText = btn ? btn.textContent : "";
+    if(btn){btn.textContent = "Signing in..."; btn.disabled = true;}
+    
+    // Step 1: Sign in with Firebase Auth
+    var cred;
+    try {
+      cred = await fbAuth.signInWithEmailAndPassword(em, pw);
+    } catch(authErr){
+      if(btn){btn.textContent = origBtnText; btn.disabled = false;}
+      var msg = authErr.message;
+      if(authErr.code === "auth/wrong-password" || authErr.code === "auth/invalid-credential" || authErr.code === "auth/invalid-login-credentials") {
+        msg = "Email or password is incorrect.";
+      } else if(authErr.code === "auth/user-not-found") {
+        msg = "No account found with that email.\n\nIf you have not registered yet, click \"Create your account\".";
+      } else if(authErr.code === "auth/network-request-failed") {
+        msg = "Network error. Check your internet connection and try again.";
+      } else if(authErr.code === "auth/too-many-requests") {
+        msg = "Too many failed sign-in attempts. Please wait a few minutes and try again.";
+      }
+      alert("Sign-in error: " + msg);
+      return;
+    }
+    
+    var uid = cred.user.uid;
+    
+    // Step 2: Fetch user profile from Firestore
+    var doc;
+    try {
+      doc = await fbDB.collection("users").doc(uid).get();
+    } catch(dbErr){
+      if(btn){btn.textContent = origBtnText; btn.disabled = false;}
+      alert("Profile fetch failed: " + dbErr.message);
+      return;
+    }
+    
+    if(btn){btn.textContent = origBtnText; btn.disabled = false;}
+    
+    if(!doc.exists){
+      alert("Account exists but profile not found. Please contact your lecturer.");
+      await fbAuth.signOut();
+      return;
+    }
+    
+    S.user = doc.data();
+    S.role = S.user.role || "student";
+    S.pg = "dashboard";
+    if(S.user.mustChange){S.pg = "profile"; alert("Welcome! Please change your default password now.");}
+    render();
+    startAnnListener();
+    loadAttFromFirestore().then(function(){ startAttListeners(); });
+    loadTestsFromFirestore().then(function(){
+      loadTestSubsFromFirestore().then(function(){
+        if(S.role==="lecturer")loadQbankFromFirestore().then(function(){startTestListeners();});
+        else startTestListeners();
+      });
+    });
+    
+  } catch(err) {
+    alert("Unexpected sign-in error: " + err.message);
+    console.error(err);
+  }
+}
+async function doRegister(){
+  try {
+    if(!fbReady){alert("Firebase is not connected. Check your internet connection and reload the page.");return;}
+    
+    var nameEl=document.getElementById("r-name");
+    var matricEl=document.getElementById("r-matric");
+    var emEl=document.getElementById("r-em");
+    var pwEl=document.getElementById("r-pw");
+    var saEl=document.getElementById("r-sa");
+    
+    var name = nameEl ? nameEl.value.trim() : "";
+    var matric = matricEl ? matricEl.value.trim() : "";
+    var em = emEl ? emEl.value.trim().toLowerCase() : "";
+    var pw = pwEl ? pwEl.value : "";
+    var sa = saEl ? saEl.value.trim().toLowerCase() : "";
+    
+    if(!name){alert("Please enter your full name.");if(nameEl)nameEl.focus();return;}
+    if(!em){alert("Please enter your email address.");if(emEl)emEl.focus();return;}
+    if(!em.includes("@")||!em.includes(".")){alert("Please enter a valid email address.");if(emEl)emEl.focus();return;}
+    if(!pw){alert("Please enter a password.");if(pwEl)pwEl.focus();return;}
+    if(pw.length<6){alert("Password must be at least 6 characters long.");if(pwEl)pwEl.focus();return;}
+    
+    var secAns = sa || matric.toLowerCase() || "password";
+    var role = (em === LECTURER_EMAIL) ? "lecturer" : "student";
+    
+    // Show "creating..." message
+    var btn = document.querySelector("button[onclick=\"doRegister()\"]");
+    var origBtnText = btn ? btn.textContent : "";
+    if(btn){btn.textContent = "Creating account..."; btn.disabled = true;}
+    
+    // Step 1: Create Firebase Auth account
+    var cred;
+    try {
+      cred = await fbAuth.createUserWithEmailAndPassword(em, pw);
+    } catch(authErr){
+      if(btn){btn.textContent = origBtnText; btn.disabled = false;}
+      var msg = authErr.message;
+      if(authErr.code === "auth/email-already-in-use") msg = "This email is already registered. Please sign in instead, or use a different email.";
+      else if(authErr.code === "auth/invalid-email") msg = "The email address is not valid.";
+      else if(authErr.code === "auth/weak-password") msg = "Password is too weak. Use at least 6 characters.";
+      else if(authErr.code === "auth/network-request-failed") msg = "Network error. Check your internet connection and try again.";
+      alert("Registration error: " + msg);
+      return;
+    }
+    
+    var uid = cred.user.uid;
+    
+    // Step 2: Create Firestore user profile
+    var profile = {
+      id: uid,
+      name: name,
+      matric: matric,
+      email: em,
+      role: role,
+      secA: secAns,
+      mustChange: false,
+      createdAt: Date.now()
+    };
+    
+    try {
+      await fbDB.collection("users").doc(uid).set(profile);
+    } catch(dbErr){
+      if(btn){btn.textContent = origBtnText; btn.disabled = false;}
+      alert("Account created but profile save failed: " + dbErr.message + "\n\nPlease contact your lecturer to fix this.");
+      return;
+    }
+    
+    if(btn){btn.textContent = origBtnText; btn.disabled = false;}
+    
+    // Step 3: Set state and go to dashboard
+    S.user = profile;
+    S.role = role;
+    S.pg = "dashboard";
+    render();
+    startAnnListener();
+    loadAttFromFirestore().then(function(){ startAttListeners(); });
+    loadTestsFromFirestore().then(function(){
+      loadTestSubsFromFirestore().then(function(){
+        if(S.role==="lecturer")loadQbankFromFirestore().then(function(){startTestListeners();});
+        else startTestListeners();
+      });
+    });
+    alert("✅ Welcome, " + name + "!\n\nYour account is created in the cloud. You can now sign in from any device with the same email and password.");
+    
+  } catch(err) {
+    alert("Unexpected error: " + err.message);
+    console.error(err);
+  }
+}
+function doForgot(){
+  const em=document.getElementById("f-em").value.trim().toLowerCase();
+  const sa=document.getElementById("f-sa").value.trim().toLowerCase();
+  const np=document.getElementById("f-np").value;
+  const cp=document.getElementById("f-cp").value;
+  if(!em||!sa||!np||!cp){notify("Please fill all fields","err");return;}
+  if(np!==cp){notify("Passwords do not match","err");return;}
+  if(np.length<6){notify("Password must be at least 6 characters","err");return;}
+  const idx=S.data.users.findIndex(x=>x.email.toLowerCase()===em&&x.secA===sa);
+  if(idx<0){notify("Email or security answer incorrect","err");return;}
+  S.data.users[idx].password=np;S.data.users[idx].mustChange=false;
+  saveU();S.pg="login";notify("Password reset! You can now sign in.");render();
+}
+function doChangePw(){
+  const op=document.getElementById("cp-old").value;
+  const np=document.getElementById("cp-new").value;
+  const cp=document.getElementById("cp-con").value;
+  if(!op||!np||!cp){notify("Please fill all fields","err");return;}
+  const idx=S.data.users.findIndex(x=>x.id===S.user.id);
+  if(S.data.users[idx].password!==op){notify("Current password incorrect","err");return;}
+  if(np!==cp){notify("New passwords do not match","err");return;}
+  if(np.length<6){notify("New password must be at least 6 characters","err");return;}
+  S.data.users[idx].password=np;S.data.users[idx].mustChange=false;
+  S.user=S.data.users[idx];saveU();notify("Password changed successfully!");
+  ["cp-old","cp-new","cp-con"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+}
+async function doLogout(){
+  stopAllListeners();
+  try {
+    if(fbReady && fbAuth){
+      await fbAuth.signOut();
+    }
+  } catch(err){console.error("Logout error:",err);}
+  S.user = null;
+  S.role = "";
+  S.pg = "login";
+  render();
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────
+function nav(pg,extra){S.pg=pg;if(extra)Object.assign(S,extra);if(pg!=="course")S.course=null;openTh=null;render();window.scrollTo(0,0);const sb=document.getElementById("sb");if(sb)sb.classList.remove("open");}
+function openC(code){S.course=code;S.tab="overview";S.pg="course";openTh=null;render();window.scrollTo(0,0);}
+function setTab(t){S.tab=t;openTh=null;render();}
+function togTh(id){openTh=openTh===id?null:id;render();}
+function togSB(){const sb=document.getElementById("sb");if(sb)sb.classList.toggle("open");}
+
+// ── FORUM ──────────────────────────────────────────────────
+function postThread(code){
+  const title=document.getElementById("nt-t").value.trim();
+  const body=document.getElementById("nt-b").value.trim();
+  if(!title||!body){notify("Please provide a title and message","err");return;}
+  const k=ck(code);
+  S.data.threads[k].unshift({id:Date.now(),author:S.user.name,role:S.role,title,body,time:dateNow(),replies:[]});
+  saveT(code);S.tab="forum";render();notify("Thread posted.");
+}
+function postReply(code,tid){
+  const el=document.getElementById("rep-"+tid);
+  if(!el||!el.value.trim()){notify("Write a reply first","err");return;}
+  const k=ck(code);
+  S.data.threads[k]=S.data.threads[k].map(t=>t.id===tid?{...t,replies:[...t.replies,{author:S.user.name,role:S.role,body:el.value.trim(),time:dateNow()}]}:t);
+  saveT(code);openTh=tid;render();notify("Reply posted.");
+}
+
+// ── ASSIGNMENTS ────────────────────────────────────────────
+function createAssign(code){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const t=document.getElementById("na-t").value.trim();
+  const d=document.getElementById("na-d").value.trim();
+  const m=parseInt(document.getElementById("na-m").value)||40;
+  const ds=document.getElementById("na-ds").value.trim();
+  if(!t||!d){notify("Title and due date required","err");return;}
+  S.data.assignments[ck(code)].push({id:Date.now(),title:t,due:d,max:m,desc:ds,createdAt:new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})});
+  saveA(code);S.tab="assignments";render();notify("Assignment published!");
+}
+function submitAssign(code,aid){
+  const k=ck(code);
+  if(S.data.submissions[k].find(s=>s.assignId===aid&&s.student===S.user.name)){notify("Already submitted","err");return;}
+  S.data.submissions[k].push({id:Date.now(),assignId:aid,student:S.user.name,matric:S.user.matric||"",
+    file:"sub_"+(S.user.matric||"").replace(/[^a-z0-9]/gi,"_").toLowerCase()+"_"+Date.now()+".pdf",
+    time:dateNow(),grade:null,feedback:""});
+  saveSub(code);render();notify("Submitted successfully!");
+}
+
+// ── GRADING ────────────────────────────────────────────────
+function openGM(code,aid,student){
+  const k=ck(code);
+  const sub=S.data.submissions[k].find(s=>s.assignId===aid&&s.student===student);
+  const asgn=S.data.assignments[k].find(a=>a.id===aid);
+  document.getElementById("ovm").innerHTML=`<div class="overlay" onclick="if(event.target===this)closeM()">
+  <div class="modal"><h3>Grade Submission</h3>
+  <p style="font-size:13px;color:var(--mt);margin-bottom:15px"><strong>${sub.student}</strong>${sub.matric?" · "+sub.matric:""}<br>${asgn.title} · Max: ${asgn.max} pts</p>
+  <div class="fg"><label>Score (out of ${asgn.max})</label><input id="g-sc" type="number" min="0" max="${asgn.max}" value="${sub.grade||""}" oninput="prevG(${asgn.max})" placeholder="Enter score"></div>
+  <div id="g-prev" class="gprev" style="${sub.grade!==null?"":"display:none"}">${sub.grade!==null?"Grade: <strong>"+grade(sub.grade).l+"</strong> · GP: <strong>"+grade(sub.grade).gp+"</strong> · "+sub.grade+"/"+asgn.max:""}</div>
+  <div class="fg"><label>Feedback</label><textarea id="g-fb" rows="3" placeholder="Write constructive feedback...">${sub.feedback||""}</textarea></div>
+  <div class="mftr"><button class="btn btn-gh btn-sm" onclick="closeM()">Cancel</button><button class="btn btn-p" onclick="saveGrade('${code}',${aid},'${student.replace(/'/g,"\\'")}')">Save Grade</button></div>
+  </div></div>`;
+}
+function prevG(max){const sc=document.getElementById("g-sc").value;const pv=document.getElementById("g-prev");if(pv&&sc!==""){const g=grade(sc);pv.style.display="";pv.innerHTML="Grade: <strong>"+g.l+"</strong> · GP: <strong>"+g.gp+"</strong> · "+sc+"/"+max;}}
+function saveGrade(code,aid,student){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const sc=document.getElementById("g-sc").value;const fb=document.getElementById("g-fb").value;
+  if(!sc){notify("Enter a score","err");return;}
+  const k=ck(code);
+  S.data.submissions[k]=S.data.submissions[k].map(s=>s.assignId===aid&&s.student===student?{...s,grade:parseInt(sc),feedback:fb}:s);
+  saveSub(code);closeM();render();notify("Grade saved for "+student+".");
+}
+function closeM(){document.getElementById("ovm").innerHTML="";}
+
+// ── FILES ──────────────────────────────────────────────────
+function uploadFile(code){
+  const fi=document.getElementById("fi-"+ck(code));
+  const nm=document.getElementById("fn-"+ck(code)).value.trim();
+  if(!fi||!fi.files.length){notify("Please select a file","err");return;}
+  const file=fi.files[0];
+  if(file.size>4*1024*1024){notify("File too large (max 4 MB). Use Google Drive link for larger files.","err");return;}
+  const r=new FileReader();
+  r.onload=function(e){
+    S.data.files[ck(code)].push({id:Date.now(),name:file.name,desc:nm||file.name,size:Math.round(file.size/1024)+"KB",type:file.type,data:e.target.result,uploaded:dateNow(),by:S.user.name});
+    saveF(code);render();notify(file.name+" uploaded.");
+  };r.readAsDataURL(file);
+}
+function addLink(code){
+  const url=document.getElementById("lu-"+ck(code)).value.trim();
+  const nm=document.getElementById("ln-"+ck(code)).value.trim();
+  if(!url||!nm){notify("Provide both a name and URL","err");return;}
+  S.data.files[ck(code)].push({id:Date.now(),name:nm,desc:"External link",size:"—",type:"link",data:url,uploaded:dateNow(),by:S.user.name});
+  saveF(code);render();notify("Link added.");
+}
+function dlFile(id,code){
+  const f=S.data.files[ck(code)].find(x=>x.id===id);if(!f)return;
+  if(f.type==="link"){window.open(f.data,"_blank");return;}
+  const a=document.createElement("a");a.href=f.data;a.download=f.name;a.click();
+}
+function delFile(code,id){if(!confirm("Remove this file?"))return;S.data.files[ck(code)]=S.data.files[ck(code)].filter(f=>f.id!==id);saveF(code);render();notify("Removed.");}
+
+// ── LOGO ────────────────────────────────────────────────────
+function uploadLogo_disabled(slot){
+  const inp=document.createElement("input");inp.type="file";inp.accept="image/*";
+  inp.onchange=function(){const f=inp.files[0];if(!f)return;if(f.size>500*1024){notify("Logo too large (max 500KB)","err");return;}
+    const r=new FileReader();r.onload=function(e){ss("logo-"+slot,e.target.result);render();notify("Logo uploaded.");};r.readAsDataURL(f);};
+  inp.click();
+}
+
+// ── ANNOUNCEMENTS ───────────────────────────────────────────
+async function postAnn(){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  if(!fbReady){notify("Cloud not connected","err");return;}
+  const t=document.getElementById("an-t").value.trim();
+  const b=document.getElementById("an-b").value.trim();
+  const c=document.getElementById("an-c").value;
+  const u=document.getElementById("an-u").checked;
+  if(!t||!b){notify("Title and body required","err");return;}
+  
+  const ann={
+    id: Date.now().toString(),
+    title: t,
+    body: b,
+    course: c,
+    urgent: u,
+    date: new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"}),
+    createdAt: Date.now(),
+    by: S.user.name||"Lecturer"
+  };
+  
+  try{
+    await fbDB.collection("announcements").doc(ann.id).set(ann);
+    document.getElementById("an-t").value="";
+    document.getElementById("an-b").value="";
+    notify("Announcement posted to cloud","ok");
+    // The realtime listener will update S.data.announcements and re-render
+  }catch(err){
+    notify("Error posting: "+err.message,"err");
+    console.error(err);
+  }
+}
+async function delAnn(id){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  if(!fbReady){notify("Cloud not connected","err");return;}
+  if(!confirm("Delete this announcement?"))return;
+  try{
+    await fbDB.collection("announcements").doc(String(id)).delete();
+    notify("Announcement deleted","ok");
+    // Realtime listener will update view
+  }catch(err){
+    notify("Error deleting: "+err.message,"err");
+    console.error(err);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// ATTENDANCE SYSTEM — Milestone D: Live Firebase Sync
+// ══════════════════════════════════════════════════════
+
+// ── Deterministic rolling-code generator (no storage needed) ──
+// Both lecturer device and student devices compute the same code
+// independently from the session's openedAt timestamp.
+function computeAttCode(openedAt, slot) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s = ((openedAt & 0x7FFFFFFF) * 31 + slot * 999983) & 0x7FFFFFFF;
+  if (s === 0) s = 12345;
+  for (let i = 0; i < 6; i++) { s = (s * 1664525 + 1013904223) & 0x7FFFFFFF; }
+  let c = ""; let tmp = s;
+  for (let i = 0; i < 6; i++) { tmp = (tmp * 1664525 + 1013904223) & 0x7FFFFFFF; c += chars[tmp % chars.length]; }
+  return c;
+}
+function getAttSlot(openedAt) { return Math.floor((Date.now() - openedAt) / (2 * 60 * 1000)); }
+function getActiveCode(sess) {
+  if (!sess || !sess.open) return null;
+  return computeAttCode(sess.openedAt, getAttSlot(sess.openedAt));
+}
+function isValidCode(sess, entered) {
+  if (!sess || !sess.open || !entered) return false;
+  const slot = getAttSlot(sess.openedAt);
+  return entered === computeAttCode(sess.openedAt, slot) ||
+         (slot > 0 && entered === computeAttCode(sess.openedAt, slot - 1));
+}
+function secToNextRotate(sess) {
+  const rotMs = 2 * 60 * 1000;
+  const elapsed = (Date.now() - sess.openedAt) % rotMs;
+  return Math.ceil((rotMs - elapsed) / 1000);
+}
+function startCodeTimer(code, sid) {
+  clearInterval(window._codeTimer);
+  window._codeTimer = setInterval(() => {
+    const k = ck(code);
+    const sess = (S.data.attendance[k] || []).find(s => s.id === sid);
+    if (!sess || !sess.open) { clearInterval(window._codeTimer); return; }
+    const cur = getActiveCode(sess);
+    const el = document.getElementById("live-code");
+    const tel = document.getElementById("code-timer");
+    if (el) el.textContent = cur || "------";
+    if (tel) { const r = secToNextRotate(sess); tel.textContent = "Changes in: " + Math.floor(r/60) + ":" + (r%60<10?"0":"") + r%60; }
+  }, 1000);
+}
+
+// ── Firebase Attendance Helpers ──────────────────────
+function attDocId(k, id) { return "att_" + k + "_" + id; }
+
+// Convert Firestore marks map {matric: markObj} → records array
+function marksToRecords(marks, enrolled) {
+  const result = [];
+  const seen = new Set();
+  enrolled.forEach(e => {
+    const m = (marks || {})[e.matric];
+    result.push(m ? {...m} : {student: e.student, matric: e.matric, status: null, time: null, selfMarked: false});
+    seen.add(e.matric);
+  });
+  Object.entries(marks || {}).forEach(([mk, m]) => {
+    const mat = m.matric || mk;
+    if (!seen.has(mat)) { result.push({...m}); seen.add(mat); }
+  });
+  return result;
+}
+
+function enrolledForCourse(code) {
+  return ROSTER.filter(r => r.course === code).map(r => ({student: r.name, matric: r.matric}));
+}
+
+async function loadAttFromFirestore() {
+  if (!fbReady || !fbDB) return;
+  try {
+    const snap = await fbDB.collection("att_sessions").get();
+    snap.forEach(doc => {
+      const d = doc.data();
+      const k = d.courseKey; if (!k) return;
+      if (!S.data.attendance[k]) S.data.attendance[k] = [];
+      const course = COURSES.find(c => ck(c.code) === k);
+      const enrolled = course ? enrolledForCourse(course.code) : [];
+      const records = marksToRecords(d.marks || {}, enrolled);
+      const idx = S.data.attendance[k].findIndex(s => s.id === d.id);
+      const sess = {id:d.id, date:d.date, topic:d.topic, openedAt:d.openedAt,
+        graceMins:d.graceMins, open:d.open, closedAt:d.closedAt, manual:d.manual||false, records};
+      if (idx >= 0) S.data.attendance[k][idx] = sess;
+      else S.data.attendance[k].push(sess);
+    });
+    COURSES.forEach(c => {
+      const k = ck(c.code);
+      if (S.data.attendance[k]) S.data.attendance[k].sort((a,b) => b.id - a.id);
+    });
+    console.log("✓ Attendance loaded from Firestore");
+  } catch(e) { console.warn("loadAttFromFirestore error:", e); }
+}
+
+async function saveManualSession(code){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const date=document.getElementById("ms-date")?.value.trim();
+  const topic=document.getElementById("ms-topic")?.value.trim();
+  if(!date||!topic){notify("Date and topic required","err");return;}
+  const k=ck(code);const enrolled=ROSTER.filter(r=>r.course===code);
+  const records=enrolled.map(u=>{
+    const sel=document.getElementById("ms-"+String(u.matric));
+    return{student:u.name,matric:String(u.matric),status:sel?sel.value:"absent",time:date,selfMarked:false};
+  });
+  const sessId=Date.now();
+  const sess={id:sessId,courseKey:k,date,topic,openedAt:sessId-86400000,graceMins:10,open:false,closedAt:sessId-86400000,manual:true};
+  // Build marks map from records
+  const marks={};records.forEach(r=>{marks[r.matric]={...r};});
+  if(fbReady&&fbDB){
+    try{ await fbDB.collection("att_sessions").doc(attDocId(k,sessId)).set({...sess,marks}); }
+    catch(e){console.warn("Firestore saveManual failed:",e);}
+  }
+  if(!S.data.attendance[k])S.data.attendance[k]=[];
+  S.data.attendance[k].unshift({...sess,records});
+  saveAtt(code);S.tab="attendance";render();notify("Past session saved ("+records.length+" students).");
+}
+
+function getAttStats(code,studentName){
+  const sessions=(S.data.attendance[ck(code)]||[]).filter(s=>!s.open);
+  const total=sessions.length;
+  const pres=sessions.filter(s=>s.records.find(r=>r.student===studentName&&r.status==="present")).length;
+  const late=sessions.filter(s=>s.records.find(r=>r.student===studentName&&r.status==="late")).length;
+  const abs=total-pres-late;const pct=total>0?Math.round(((pres+late)/total)*100):0;
+  return{total,pres,late,abs,pct};
+}
+function genAttReport(code){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const c=cobj(code);if(!c)return;
+  const sessions=(S.data.attendance[ck(code)]||[]).filter(s=>!s.open);
+  const students=S.data.users.filter(u=>u.role==="student"&&ROSTER.find(r=>String(r.matric)===String(u.matric)&&r.course===code));
+  if(!students.length){notify("No students found for "+code,"err");return;}
+  const now=new Date().toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"});
+  const UNI_SRC=getLogo("UNILOGO");const THA_SRC=getLogo("UNILOGO");
+  let h=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+  body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:20px;color:#1a0030}
+  h1{font-size:22px;color:#4A0082}h2{font-size:17px;color:#4A0082;margin:20px 0 8px}
+  .hdr{text-align:center;border-bottom:2px solid #4A0082;padding-bottom:14px;margin-bottom:20px}
+  .hdr img{width:56px;height:56px;border-radius:50%;margin:0 7px;vertical-align:middle}
+  table{width:100%;border-collapse:collapse;margin:8px 0}th{background:#4A0082;color:#fff;padding:7px 10px;font-size:12px;text-align:left}
+  td{padding:7px 10px;font-size:12px;border-bottom:1px solid #DDD0EE}
+  .p{background:#D4EFDF;color:#1A6B3A;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700}
+  .l{background:#FEF3E2;color:#A07010;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700}
+  .a{background:#FADBD8;color:#8B2020;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700}
+  .rc{border:1px solid #DDD0EE;border-radius:8px;padding:12px;margin-bottom:12px;page-break-inside:avoid}
+  @media print{body{margin:10px}}</style></head><body>
+  <div class="hdr"><img src="${UNI_SRC}" alt="LASUED"><img src="${THA_SRC}" alt="THA">
+  <h1>LASUED — Department of Theatre Arts</h1>
+  <p style="font-size:13px;color:#666">${c.code}: ${c.title} · ${CFG.session}</p>
+  <p style="font-size:11px;color:#999">Attendance Report — ${now} · ${sessions.length} sessions · ${students.length} students</p></div>`;
+  students.forEach((u,i)=>{
+    const st=getAttStats(code,u.name);
+    const rem=st.pct>=75?"Satisfactory — meets 75% minimum.":st.pct>=60?"Marginal — at risk of falling below 75% minimum.":"Poor — insufficient attendance. Academic consequence may apply.";
+    const rc=st.pct>=75?"#1A6B3A":st.pct>=60?"#A07010":"#8B2020";
+    h+=`<div class="rc"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+    <div><strong>${u.name}</strong><br><span style="font-size:11px;color:#888">${u.matric}</span></div>
+    <div style="text-align:right"><span style="font-size:22px;font-weight:700;color:#4A0082">${st.pct}%</span><br><span style="font-size:11px;color:#888">Attendance</span></div></div>
+    <div style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap">
+      <span class="p">✅ Present: ${st.pres}</span><span class="l">🕐 Late: ${st.late}</span>
+      <span class="a">❌ Absent: ${st.abs}</span><span style="background:#EDE7F6;color:#4A0082;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700">Total: ${st.total}</span>
+    </div>
+    <p style="font-size:12px;color:${rc};font-style:italic">${rem}</p>
+    <table><thead><tr><th>#</th><th>Date</th><th>Topic</th><th>Status</th></tr></thead><tbody>
+    ${sessions.map((s,j)=>{const r=s.records.find(x=>x.student===u.name);const st_=r?.status||"absent";return`<tr><td>${j+1}</td><td>${s.date}</td><td>${s.topic}</td><td><span class="${st_==="present"?"p":st_==="late"?"l":"a"}">${st_.toUpperCase()}</span></td></tr>`;})}</tbody></table></div>`;
+  });
+  h+='</body></html>';
+  const blob=new Blob([h],{type:"text/html"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=c.code.replace(" ","_")+"_Attendance_Report.html";a.click();
+  notify("HTML report downloaded. Open in browser → File → Print → Save as PDF.");
+}
+function genWordReport(code){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const c=cobj(code);if(!c)return;
+  const sessions=(S.data.attendance[ck(code)]||[]).filter(s=>!s.open);
+  const students=S.data.users.filter(u=>u.role==="student"&&ROSTER.find(r=>String(r.matric)===String(u.matric)&&r.course===code));
+  const now=new Date().toLocaleDateString("en-NG",{day:"numeric",month:"long",year:"numeric"});
+  let txt="LASUED — DEPARTMENT OF THEATRE ARTS\n"+c.code+": "+c.title+"\n"+CFG.session+"\nAttendance Report — "+now+"\n\n"+"=".repeat(55)+"\n\nSUMMARY\n"+"─".repeat(40)+"\nCourse: "+c.code+" — "+c.title+"\nSessions held: "+sessions.length+"\nStudents: "+students.length+"\n\n"+"=".repeat(55)+"\n\nINDIVIDUAL RECORDS\n"+"─".repeat(40)+"\n\n";
+  students.forEach((u,i)=>{
+    const st=getAttStats(code,u.name);
+    const rem=st.pct>=75?"SATISFACTORY":st.pct>=60?"MARGINAL — AT RISK":"POOR — INSUFFICIENT ATTENDANCE";
+    txt+=`${i+1}. ${u.name}\n   Matric: ${u.matric}\n   Present: ${st.pres} | Late: ${st.late} | Absent: ${st.abs} | Total: ${st.total}\n   Rate: ${st.pct}%\n   Status: ${rem}\n\n   Session Log:\n`;
+    sessions.forEach((s,j)=>{const r=s.records.find(x=>x.student===u.name);txt+=`   ${j+1}. ${s.date} — ${s.topic}: ${(r?.status||"absent").toUpperCase()}\n`;});
+    txt+="\n"+"─".repeat(50)+"\n\n";
+  });
+  const blob=new Blob([txt],{type:"application/msword"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=c.code.replace(" ","_")+"_Attendance_Report.doc";a.click();notify("Word report downloaded.");
+}
+async function openAttSession(code){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const topic=document.getElementById("att-topic").value.trim();
+  const grace=parseInt(document.getElementById("att-grace").value)||10;
+  const k=ck(code);
+  // Close any previously open session first
+  const prevOpen=(S.data.attendance[k]||[]).find(s=>s.open);
+  if(prevOpen)await closeAttSession(code,prevOpen.id);
+  const enrolled=S.data.users.filter(u=>u.role==="student"&&ROSTER.find(r=>r.matric===u.matric&&r.course===code));
+  const records=enrolled.length>0?enrolled.map(u=>({student:u.name,matric:u.matric,status:null,time:null,selfMarked:false})):[];
+  const sessId=Date.now();
+  const sess={id:sessId,courseKey:k,
+    date:new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"}),
+    topic:topic||"Class Session",openedAt:sessId,graceMins:grace,open:true,closedAt:null,manual:false};
+  if(fbReady&&fbDB){
+    try{
+      await fbDB.collection("att_sessions").doc(attDocId(k,sessId)).set({...sess,marks:{}});
+      console.log("✓ Session opened in Firestore:", attDocId(k,sessId));
+    }catch(e){console.warn("Firestore openAtt failed:",e);}
+  }
+  if(!S.data.attendance[k])S.data.attendance[k]=[];
+  S.data.attendance[k].unshift({...sess,records});
+  saveAtt(code);
+  window._activeAttCourse=code;window._activeAttSessId=sessId;
+  render();startCodeTimer(code,sessId);
+  notify("Session opened! Show the rolling code to your class.");
+}
+
+async function closeAttSession(code,sid){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const k=ck(code);
+  if(fbReady&&fbDB){
+    try{await fbDB.collection("att_sessions").doc(attDocId(k,sid)).update({open:false,closedAt:Date.now()});}
+    catch(e){console.warn("Firestore closeAtt failed:",e);}
+  }
+  S.data.attendance[k]=(S.data.attendance[k]||[]).map(s=>s.id===sid?{...s,open:false,closedAt:Date.now()}:s);
+  saveAtt(code);clearInterval(window._codeTimer);render();notify("Session closed. Attendance saved.");
+}
+
+async function markStudent(code,sid,student,status){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  const k=ck(code);
+  const stuData=S.data.users.find(u=>u.name===student)||ROSTER.find(r=>r.name===student&&r.course===code);
+  const matric=stuData?.matric||"";
+  const mark={student,matric,status,time:dateNow(),selfMarked:false};
+  if(fbReady&&fbDB){
+    try{
+      const key=matric||("m_"+student.replace(/\W/g,"_"));
+      await fbDB.collection("att_sessions").doc(attDocId(k,sid)).update({[`marks.${key}`]:mark});
+    }catch(e){console.warn("Firestore markStudent failed:",e);}
+  }
+  S.data.attendance[k]=(S.data.attendance[k]||[]).map(s=>{
+    if(s.id!==sid)return s;
+    const recs=(s.records||[]).map(r=>r.student===student?{...r,...mark}:r);
+    if(!s.records.find(r=>r.student===student))recs.push(mark);
+    return{...s,records:recs};
+  });
+  saveAtt(code);render();
+}
+
+async function addAbsentees(code,sid){
+  const k=ck(code);
+  const absTime=dateNow();
+  if(fbReady&&fbDB){
+    try{
+      const doc=await fbDB.collection("att_sessions").doc(attDocId(k,sid)).get();
+      if(doc.exists){
+        const marks=doc.data().marks||{};
+        const course=COURSES.find(c=>ck(c.code)===k);
+        const enrolled=course?enrolledForCourse(course.code):[];
+        const updates={};
+        enrolled.forEach(e=>{
+          if(!marks[e.matric]||!marks[e.matric].status){
+            updates[`marks.${e.matric}`]={student:e.student,matric:e.matric,status:"absent",time:absTime,selfMarked:false};
+          }
+        });
+        if(Object.keys(updates).length>0)await fbDB.collection("att_sessions").doc(attDocId(k,sid)).update(updates);
+      }
+    }catch(e){console.warn("Firestore addAbsentees failed:",e);}
+  }
+  S.data.attendance[k]=(S.data.attendance[k]||[]).map(s=>{
+    if(s.id!==sid)return s;
+    return{...s,records:(s.records||[]).map(r=>r.status===null?{...r,status:"absent",time:absTime}:r)};
+  });
+  saveAtt(code);render();notify("All unmarked students marked Absent.");
+}
+
+// STUDENT: enter session code to self-mark (syncs to Firestore)
+async function studentMarkAtt(code){
+  const entered=(document.getElementById("att-code-in")||{}).value?.trim().toUpperCase();
+  if(!entered){notify("Please enter the session code","err");return;}
+  const k=ck(code);
+  // Fetch the open session from Firestore for freshest openedAt data
+  let firestoreSess=null;
+  if(fbReady&&fbDB){
+    try{
+      const snap=await fbDB.collection("att_sessions")
+        .where("courseKey","==",k).where("open","==",true).limit(1).get();
+      if(!snap.empty)firestoreSess={...snap.docs[0].data(),_docId:snap.docs[0].id};
+    }catch(e){console.warn("Firestore fetch for student mark failed:",e);}
+  }
+  const sess=firestoreSess||(S.data.attendance[k]||[]).find(s=>s.open);
+  if(!sess){notify("No open session for this course. Ask your lecturer to open attendance.","err");return;}
+  if(!isValidCode(sess,entered)){notify("Invalid or expired code. Check the code shown by your lecturer.","err");return;}
+  // Check already marked
+  const myMatric=S.user?.matric||"";
+  if(firestoreSess&&myMatric&&firestoreSess.marks&&firestoreSess.marks[myMatric]?.status){
+    notify("You have already marked your attendance for this session.","err");return;
+  }
+  const localSess=(S.data.attendance[k]||[]).find(s=>s.id===sess.id);
+  if(localSess){
+    const existing=localSess.records.find(r=>r.matric===myMatric||r.student===S.user?.name);
+    if(existing&&existing.status){notify("You have already marked your attendance for this session.","err");return;}
+  }
+  const elapsed=(Date.now()-sess.openedAt)/1000/60;
+  const status=elapsed<=sess.graceMins?"present":"late";
+  const mark={student:S.user.name,matric:myMatric,status,time:dateNow(),selfMarked:true};
+  // Write to Firestore
+  if(fbReady&&fbDB){
+    try{
+      const docId=firestoreSess?._docId||attDocId(k,sess.id);
+      const key=myMatric||("u_"+fbAuth.currentUser?.uid);
+      await fbDB.collection("att_sessions").doc(docId).update({[`marks.${key}`]:mark});
+      console.log("✓ Student attendance written to Firestore");
+    }catch(e){
+      notify("Connection error — could not save. Please try again.","err");
+      console.error("Firestore student mark failed:",e);return;
+    }
+  }
+  // Update local state
+  if(!S.data.attendance[k])S.data.attendance[k]=[];
+  const idx=S.data.attendance[k].findIndex(s=>s.id===sess.id);
+  if(idx>=0){
+    S.data.attendance[k][idx]={...S.data.attendance[k][idx],
+      records:S.data.attendance[k][idx].records.map(r=>
+        (r.matric===myMatric||r.student===S.user.name)?{...r,...mark}:r)};
+    if(!S.data.attendance[k][idx].records.find(r=>r.matric===myMatric))
+      S.data.attendance[k][idx].records.push(mark);
+  } else {
+    const enrolled=enrolledForCourse(code);
+    S.data.attendance[k].unshift({id:sess.id,date:sess.date,topic:sess.topic,
+      openedAt:sess.openedAt,graceMins:sess.graceMins,open:true,closedAt:null,manual:false,
+      records:[...enrolled.map(e=>e.matric===myMatric?{...e,...mark}:{...e,status:null,time:null,selfMarked:false})]});
+  }
+  saveAtt(code);render();
+  if(status==="present")notify("✅ Attendance marked — PRESENT. You are on time.");
+  else notify("🕐 Attendance marked — LATE. ("+Math.round(elapsed)+" min after session opened)","info");
+}
+
+function getMyAttSummary(code){
+  const sessions=S.data.attendance[ck(code)]||[];
+  const name=S.user?.name;
+  return sessions.filter(s=>!s.open).map(s=>{
+    const r=s.records.find(x=>x.student===name);
+    return{date:s.date,topic:s.topic,status:r?.status||"absent",time:r?.time||"—"};
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// TESTS SYSTEM — Milestone E
+// ══════════════════════════════════════════════════════
+
+// ── Auto-Grading Engine ────────────────────────────────
+function normalizeAnswer(s){
+  if(s===null||s===undefined)return "";
+  let str = String(s);
+  // Strip diacritics (é→e, ṣ→s, ò→o, ñ→n, etc.)
+  // Normalize to NFD and remove combining marks; then handle special non-decomposable chars
+  str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  // Handle Yoruba-specific marks that NFD may not strip in some browsers
+  str = str.replace(/[ṣṢ]/g,"s").replace(/[ọỌ]/g,"o").replace(/[ẹẸ]/g,"e");
+  // Lowercase, trim, collapse whitespace
+  str = str.toLowerCase().trim().replace(/\s+/g," ");
+  // Strip common punctuation at edges and inside (keep alphanumerics and spaces only)
+  str = str.replace(/[.,;:!?"'`’‘"”\-_()[\]{}]/g," ").replace(/\s+/g," ").trim();
+  return str;
+}
+function gradeQuestion(q, answer){
+  // Returns: {points, autoGraded, correct}
+  if(q.type==="mcq"){
+    const isC = (answer!==undefined && answer!==null && parseInt(answer)===parseInt(q.correct));
+    return {points: isC?q.points:0, autoGraded:true, correct:isC};
+  }
+  if(q.type==="tf"){
+    const isC = (answer===q.correct || String(answer)===String(q.correct));
+    return {points: isC?q.points:0, autoGraded:true, correct:isC};
+  }
+  if(q.type==="fib"){
+    const norm = normalizeAnswer(answer);
+    if(!norm) return {points:0, autoGraded:true, correct:false};
+    const accepts = (q.accepts||[]).map(normalizeAnswer);
+    const isC = accepts.includes(norm);
+    return {points: isC?q.points:0, autoGraded:true, correct:isC};
+  }
+  // short or essay — manual grade
+  return {points:0, autoGraded:false, correct:null};
+}
+
+function gradeSubmission(test, answers){
+  let auto=0, maxAuto=0, manual=0, maxManual=0;
+  const grades={};
+  (test.questions||[]).forEach(q=>{
+    const g=gradeQuestion(q, answers[q.id]);
+    grades[q.id]=g;
+    if(g.autoGraded){ auto+=g.points; maxAuto+=q.points; }
+    else { maxManual+=q.points; }
+  });
+  return {autoScore:auto, maxAuto, manualScore:0, maxManual, totalScore:auto, maxTotal:maxAuto+maxManual, grades};
+}
+
+// ── Firestore: Tests CRUD ──────────────────────────────
+async function fbSaveTest(test){
+  if(!fbReady||!fbDB) return;
+  try{ await fbDB.collection("tests").doc(test.id).set(test); }
+  catch(e){ console.error("fbSaveTest failed:",e); notify("Cloud save failed: "+e.message,"err"); }
+}
+async function fbDeleteTest(testId){
+  if(!fbReady||!fbDB) return;
+  try{ await fbDB.collection("tests").doc(testId).delete(); }
+  catch(e){ console.error("fbDeleteTest failed:",e); }
+}
+async function loadTestsFromFirestore(){
+  if(!fbReady||!fbDB) return;
+  try{
+    const snap = await fbDB.collection("tests").get();
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.tests = list;
+    saveTests();
+    console.log("✓ Tests loaded from Firestore:",list.length);
+  }catch(e){ console.warn("loadTestsFromFirestore:",e); }
+}
+async function loadTestSubsFromFirestore(){
+  if(!fbReady||!fbDB||!S.user) return;
+  try{
+    let q = fbDB.collection("test_submissions");
+    if(S.role==="student") q = q.where("studentUid","==",S.user.id||fbAuth.currentUser?.uid);
+    const snap = await q.get();
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.testSubs = list;
+    saveTestSubs();
+    console.log("✓ Test submissions loaded:",list.length);
+  }catch(e){ console.warn("loadTestSubsFromFirestore:",e); }
+}
+async function loadQbankFromFirestore(){
+  if(!fbReady||!fbDB) return;
+  try{
+    const snap = await fbDB.collection("question_bank").get();
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.qbank = list;
+    saveQbank();
+  }catch(e){ console.warn("loadQbankFromFirestore:",e); }
+}
+
+// ── Real-time listeners ────────────────────────────────
+let fbTestsUnsub=null, fbSubsUnsub=null, fbQbankUnsub=null;
+function startTestListeners(){
+  if(!fbReady||!fbDB||!S.user) return;
+  if(fbTestsUnsub){try{fbTestsUnsub();}catch(e){}}
+  fbTestsUnsub = fbDB.collection("tests").onSnapshot(snap=>{
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.tests = list; saveTests();
+    if(S.pg==="tests") render();
+  }, err=>console.warn("Tests listener:",err));
+
+  if(fbSubsUnsub){try{fbSubsUnsub();}catch(e){}}
+  let subQ = fbDB.collection("test_submissions");
+  if(S.role==="student") subQ = subQ.where("studentUid","==",S.user.id||fbAuth.currentUser?.uid);
+  fbSubsUnsub = subQ.onSnapshot(snap=>{
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.testSubs = list; saveTestSubs();
+    if(S.pg==="tests") render();
+  }, err=>console.warn("Subs listener:",err));
+
+  if(S.role==="lecturer"){
+    if(fbQbankUnsub){try{fbQbankUnsub();}catch(e){}}
+    fbQbankUnsub = fbDB.collection("question_bank").onSnapshot(snap=>{
+      const list=[]; snap.forEach(d=>list.push(d.data()));
+      S.data.qbank = list; saveQbank();
+      if(S.pg==="tests"&&S.testTab==="bank") render();
+    }, err=>console.warn("Qbank listener:",err));
+  }
+}
+
+// ── Test creation/management (lecturer) ────────────────
+async function createTest(){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const title=document.getElementById("nt-title").value.trim();
+  const course=document.getElementById("nt-course").value;
+  const instructions=document.getElementById("nt-instr").value.trim();
+  const duration=parseInt(document.getElementById("nt-dur").value)||0;
+  const openAt=document.getElementById("nt-open").value;
+  const closeAt=document.getElementById("nt-close").value;
+  if(!title){notify("Title required","err");return;}
+  if(!course){notify("Select a course","err");return;}
+  const test={
+    id:"test_"+Date.now(), title, course, courseKey:ck(course),
+    instructions, duration, openAt, closeAt,
+    questions:[],
+    createdAt:Date.now(), createdBy:S.user.name||"Lecturer",
+    published:false
+  };
+  S.data.tests.push(test);
+  saveTests();
+  await fbSaveTest(test);
+  S.activeTest=test.id;
+  S.testTab="edit";
+  notify("Test created. Now add questions.");
+  render();
+}
+
+async function deleteTest(testId){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  if(!confirm("Delete this test? This cannot be undone."))return;
+  S.data.tests=S.data.tests.filter(t=>t.id!==testId);
+  saveTests();
+  await fbDeleteTest(testId);
+  notify("Test deleted.");
+  render();
+}
+
+async function togglePublish(testId){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  if(!t.questions||t.questions.length===0){notify("Add at least one question first","err");return;}
+  t.published=!t.published;
+  saveTests();
+  await fbSaveTest(t);
+  notify(t.published?"Test published — students can now take it.":"Test unpublished.");
+  render();
+}
+
+async function addQuestionToTest(testId){
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  const type=document.getElementById("nq-type").value;
+  const text=document.getElementById("nq-text").value.trim();
+  const points=parseInt(document.getElementById("nq-points").value)||1;
+  if(!text){notify("Question text required","err");return;}
+  const q={id:"q_"+Date.now()+"_"+Math.floor(Math.random()*1000),type,text,points};
+  if(type==="mcq"){
+    const opts=[0,1,2,3].map(i=>document.getElementById("nq-opt-"+i).value.trim()).filter(o=>o);
+    if(opts.length<2){notify("Provide at least 2 options","err");return;}
+    const correct=parseInt(document.getElementById("nq-correct").value);
+    if(isNaN(correct)||correct>=opts.length){notify("Select correct option","err");return;}
+    q.options=opts; q.correct=correct;
+  }
+  if(type==="tf"){
+    q.correct=document.getElementById("nq-tf").value==="true";
+  }
+  if(type==="fib"){
+    const accepts=document.getElementById("nq-accepts").value.split("|").map(s=>s.trim()).filter(s=>s);
+    if(accepts.length===0){notify("Provide at least one acceptable answer","err");return;}
+    q.accepts=accepts;
+  }
+  // short and essay need no extra config
+  t.questions.push(q);
+  saveTests();
+  await fbSaveTest(t);
+  // Optionally save to bank
+  if(document.getElementById("nq-save-bank")?.checked){
+    addToQbank({...q,course:t.course});
+  }
+  notify("Question added.");
+  render();
+}
+
+async function deleteQuestion(testId,qId){
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  t.questions=t.questions.filter(q=>q.id!==qId);
+  saveTests();
+  await fbSaveTest(t);
+  render();
+}
+
+async function pullFromBank(testId,qId){
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  const bq=S.data.qbank.find(q=>q.id===qId);if(!bq)return;
+  const newQ={...bq,id:"q_"+Date.now()+"_"+Math.floor(Math.random()*1000)};
+  delete newQ.tags; delete newQ.savedAt;
+  t.questions.push(newQ);
+  saveTests();
+  await fbSaveTest(t);
+  notify("Question added from bank.");
+  render();
+}
+
+// ── Question Bank ──────────────────────────────────────
+async function addToQbank(q){
+  const bq={...q,id:"bq_"+Date.now()+"_"+Math.floor(Math.random()*1000),savedAt:Date.now(),tags:[q.course||""]};
+  S.data.qbank.push(bq);
+  saveQbank();
+  if(fbReady&&fbDB){
+    try{await fbDB.collection("question_bank").doc(bq.id).set(bq);}
+    catch(e){console.warn("qbank save:",e);}
+  }
+}
+
+async function saveBankQuestion(){
+  if(S.role!=="lecturer")return;
+  const type=document.getElementById("bq-type").value;
+  const text=document.getElementById("bq-text").value.trim();
+  const course=document.getElementById("bq-course").value;
+  const points=parseInt(document.getElementById("bq-points").value)||1;
+  if(!text){notify("Question text required","err");return;}
+  const q={type,text,points,course};
+  if(type==="mcq"){
+    const opts=[0,1,2,3].map(i=>document.getElementById("bq-opt-"+i).value.trim()).filter(o=>o);
+    if(opts.length<2){notify("Provide at least 2 options","err");return;}
+    const correct=parseInt(document.getElementById("bq-correct").value);
+    if(isNaN(correct)||correct>=opts.length){notify("Select correct option","err");return;}
+    q.options=opts; q.correct=correct;
+  }
+  if(type==="tf"){q.correct=document.getElementById("bq-tf").value==="true";}
+  if(type==="fib"){
+    const accepts=document.getElementById("bq-accepts").value.split("|").map(s=>s.trim()).filter(s=>s);
+    if(accepts.length===0){notify("Provide at least one acceptable answer","err");return;}
+    q.accepts=accepts;
+  }
+  await addToQbank(q);
+  notify("Saved to bank.");
+  // Clear form
+  ["bq-text","bq-points","bq-accepts","bq-opt-0","bq-opt-1","bq-opt-2","bq-opt-3","bq-correct"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  render();
+}
+
+async function deleteBankQuestion(qId){
+  if(!confirm("Delete this question from the bank?"))return;
+  S.data.qbank=S.data.qbank.filter(q=>q.id!==qId);
+  saveQbank();
+  if(fbReady&&fbDB){
+    try{await fbDB.collection("question_bank").doc(qId).delete();}catch(e){}
+  }
+  render();
+}
+
+// ── Student: Take Test ──────────────────────────────────
+function startTakingTest(testId){
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  // Check if already submitted
+  const existing=S.data.testSubs.find(s=>s.testId===testId&&s.studentUid===(S.user.id||fbAuth.currentUser?.uid));
+  if(existing){notify("You have already submitted this test.","err");return;}
+  if(!t.published){notify("This test is not yet published.","err");return;}
+  // Window check
+  const now=Date.now();
+  if(t.openAt && new Date(t.openAt).getTime() > now){notify("Test has not opened yet.","err");return;}
+  if(t.closeAt && new Date(t.closeAt).getTime() < now){notify("Test has closed.","err");return;}
+  S.activeTest=testId;
+  S.activeTestStartedAt=Date.now();
+  S.activeAnswers={};
+  S.pg="takeTest";
+  render();
+  if(t.duration>0)startTestTimer(t.duration);
+}
+
+function startTestTimer(durationMins){
+  clearInterval(window._testTimer);
+  const endAt = S.activeTestStartedAt + durationMins*60*1000;
+  window._testTimer = setInterval(()=>{
+    const left = endAt - Date.now();
+    if(left<=0){
+      clearInterval(window._testTimer);
+      notify("Time's up — submitting your test.","info");
+      submitTest(true);
+      return;
+    }
+    const el=document.getElementById("test-timer");
+    if(el){
+      const mins=Math.floor(left/60000), secs=Math.floor((left%60000)/1000);
+      el.textContent=mins+":"+(secs<10?"0":"")+secs;
+      if(left<60000)el.style.color="var(--er)";
+    }
+  },1000);
+}
+
+function recordAnswer(qId,value){S.activeAnswers[qId]=value;}
+
+async function submitTest(autoSubmit){
+  const t=S.data.tests.find(x=>x.id===S.activeTest);if(!t){notify("Test not found","err");return;}
+  if(!autoSubmit && !confirm("Submit your test? You cannot change your answers after submission."))return;
+  clearInterval(window._testTimer);
+  // Collect answers from form (in case state not in sync)
+  (t.questions||[]).forEach(q=>{
+    const el=document.getElementById("ans-"+q.id);
+    if(el){
+      if(q.type==="mcq"){
+        const checked=document.querySelector("input[name='ans-"+q.id+"']:checked");
+        if(checked)S.activeAnswers[q.id]=parseInt(checked.value);
+      } else if(q.type==="tf"){
+        const checked=document.querySelector("input[name='ans-"+q.id+"']:checked");
+        if(checked)S.activeAnswers[q.id]=checked.value==="true";
+      } else {
+        S.activeAnswers[q.id]=el.value;
+      }
+    } else {
+      const checked=document.querySelector("input[name='ans-"+q.id+"']:checked");
+      if(checked){
+        if(q.type==="mcq")S.activeAnswers[q.id]=parseInt(checked.value);
+        else if(q.type==="tf")S.activeAnswers[q.id]=checked.value==="true";
+      }
+    }
+  });
+  const result=gradeSubmission(t, S.activeAnswers);
+  const sub={
+    id:"sub_"+Date.now()+"_"+Math.floor(Math.random()*1000),
+    testId:t.id, testTitle:t.title, courseKey:t.courseKey,
+    studentUid:S.user.id||fbAuth.currentUser?.uid||"unknown",
+    studentName:S.user.name, studentMatric:S.user.matric||"",
+    startedAt:S.activeTestStartedAt, submittedAt:Date.now(),
+    timeUsedSecs:Math.floor((Date.now()-S.activeTestStartedAt)/1000),
+    answers:S.activeAnswers,
+    grades:result.grades,
+    autoScore:result.autoScore, maxAuto:result.maxAuto,
+    manualScore:0, maxManual:result.maxManual,
+    totalScore:result.totalScore, maxTotal:result.maxTotal,
+    status:result.maxManual>0?"pending_manual":"graded",
+    manualGrades:{}
+  };
+  if(fbReady&&fbDB){
+    try{ await fbDB.collection("test_submissions").doc(sub.id).set(sub); }
+    catch(e){ notify("Cloud save failed: "+e.message,"err"); return; }
+  }
+  S.data.testSubs.push(sub);
+  saveTestSubs();
+  S.activeTest=null; S.activeAnswers={}; S.activeTestStartedAt=null;
+  S.pg="tests";
+  render();
+  if(result.maxManual>0){
+    alert("✅ Submitted!\n\nAuto-graded score: "+result.autoScore+"/"+result.maxAuto+"\n\n"+result.maxManual+" points worth of essay/short-answer questions are awaiting your lecturer's review.");
+  } else {
+    alert("✅ Submitted!\n\nYour score: "+result.totalScore+"/"+result.maxTotal);
+  }
+}
+
+// ── Lecturer: Grade manual answers ─────────────────────
+async function saveManualGrade(subId){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const sub=S.data.testSubs.find(s=>s.id===subId);if(!sub)return;
+  const test=S.data.tests.find(t=>t.id===sub.testId);if(!test)return;
+  let manualTotal=0;
+  const manualGrades={};
+  (test.questions||[]).forEach(q=>{
+    if(q.type==="short"||q.type==="essay"){
+      const ptsEl=document.getElementById("mg-pts-"+q.id);
+      const fbEl=document.getElementById("mg-fb-"+q.id);
+      const pts=Math.min(parseInt(ptsEl?.value)||0, q.points);
+      manualGrades[q.id]={points:pts, feedback:fbEl?.value||""};
+      manualTotal+=pts;
+    }
+  });
+  sub.manualGrades=manualGrades;
+  sub.manualScore=manualTotal;
+  sub.totalScore=sub.autoScore+manualTotal;
+  sub.status="graded";
+  sub.gradedAt=Date.now();
+  if(fbReady&&fbDB){
+    try{ await fbDB.collection("test_submissions").doc(sub.id).set(sub); }
+    catch(e){ notify("Save failed: "+e.message,"err"); return; }
+  }
+  saveTestSubs();
+  S.gradingSub=null;
+  notify("Grade saved. Total: "+sub.totalScore+"/"+sub.maxTotal);
+  render();
+}
+
+// ── CSV Export Helpers ─────────────────────────────────
+function csvEscape(v){
+  if(v===null||v===undefined)return "";
+  let s=String(v);
+  if(s.includes(",")||s.includes("\"")||s.includes("\n")||s.includes("\r")){
+    s='"'+s.replace(/"/g,'""')+'"';
+  }
+  return s;
+}
+function downloadCSV(filename, rows){
+  const csv=rows.map(r=>r.map(csvEscape).join(",")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}); // BOM for Excel
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+function exportTestResultsCSV(testId){
+  const test=S.data.tests.find(t=>t.id===testId);if(!test){notify("Test not found","err");return;}
+  const subs=S.data.testSubs.filter(s=>s.testId===testId);
+  if(subs.length===0){notify("No submissions to export","err");return;}
+  const header=["Student Name","Matric Number","Submitted At","Time Used (mins)","Auto Score","Auto Max","Manual Score","Manual Max","Total Score","Total Max","Percentage","Status"];
+  const rows=[header];
+  subs.sort((a,b)=>(b.totalScore||0)-(a.totalScore||0)).forEach(s=>{
+    const pct=s.maxTotal>0?Math.round((s.totalScore/s.maxTotal)*100):0;
+    const mins=Math.floor((s.timeUsedSecs||0)/60)+":"+(((s.timeUsedSecs||0)%60).toString().padStart(2,"0"));
+    rows.push([
+      s.studentName||"", s.studentMatric||"",
+      new Date(s.submittedAt||0).toLocaleString("en-NG"),
+      mins, s.autoScore||0, s.maxAuto||0,
+      s.manualScore||0, s.maxManual||0,
+      s.totalScore||0, s.maxTotal||0,
+      pct+"%", s.status||""
+    ]);
+  });
+  const fname=(test.course||"Test").replace(/\s/g,"_")+"_"+(test.title||"").replace(/[^a-z0-9]/gi,"_").substring(0,30)+"_results.csv";
+  downloadCSV(fname,rows);
+  notify("CSV downloaded — open in Excel or upload to any LMS.");
+}
+function exportAttendanceCSV(courseCode){
+  const k=ck(courseCode);
+  const sessions=(S.data.attendance[k]||[]).filter(s=>!s.open).sort((a,b)=>(a.id||0)-(b.id||0));
+  if(sessions.length===0){notify("No closed sessions to export","err");return;}
+  const enrolled=ROSTER.filter(r=>r.course===courseCode).sort((a,b)=>a.name.localeCompare(b.name));
+  if(enrolled.length===0){notify("No enrolled students found","err");return;}
+  // Build header: Name, Matric, Session1Date-Topic, Session2..., Total Present, Total Late, Total Absent, % Attended
+  const header=["Student Name","Matric"];
+  sessions.forEach(s=>header.push((s.date||"")+" — "+(s.topic||"Session")));
+  header.push("Total Present","Total Late","Total Absent","Sessions Held","Attendance %");
+  const rows=[header];
+  enrolled.forEach(stu=>{
+    const row=[stu.name,stu.matric];
+    let pres=0,late=0,abs=0;
+    sessions.forEach(s=>{
+      const rec=(s.records||[]).find(r=>r.matric===stu.matric);
+      const status=rec?.status||"absent";
+      row.push(status.toUpperCase());
+      if(status==="present")pres++;
+      else if(status==="late")late++;
+      else abs++;
+    });
+    const total=sessions.length;
+    const pct=total>0?Math.round(((pres+late)/total)*100):0;
+    row.push(pres,late,abs,total,pct+"%");
+    rows.push(row);
+  });
+  const fname=courseCode.replace(/\s/g,"_")+"_Attendance_"+new Date().toISOString().split("T")[0]+".csv";
+  downloadCSV(fname,rows);
+  notify("Attendance CSV downloaded.");
+}
+
+
+
+// ═══════════════════════════════════════════════════════
+// RENDER — AUTH
+// ═══════════════════════════════════════════════════════
+function rLogin(){
+  const uL=ls("logo-uni",null);const dL=ls("logo-dept",null);
+  return `<div class="auth">
+  <div class="auth-l"><div style="background:#1A6B3A;color:#fff;padding:6px 12px;border-radius:20px;font-size:12px;display:inline-block;margin-bottom:12px;font-weight:600">☁️ Cloud Sync Active — Firebase</div>
+    <div class="auth-logos">
+      <div class="alo" >${uL?`<img src="${uL}" alt="Uni">`:"<span>University<br>Logo</span>"}</div>
+      <div class="alo" >${dL?`<img src="${dL}" alt="Dept">`:"<span>Dept<br>Logo</span>"}</div>
+    </div>
+    <div class="gdiv"></div>
+    <h1>Theatre Arts Course Portal</h1>
+    <p class="inst"><strong>${CFG.college}</strong><br>${CFG.dept}<br>${CFG.school}<br>${CFG.addr1}<br>${CFG.addr2}</p>
+    <p class="inst" style="margin-top:8px;opacity:.6;font-size:11px">${CFG.session}</p>
+    <div class="auth-feats">
+      <h3>Portal Features</h3>
+      <ul><li>6 Theatre Arts courses</li><li>Course materials & downloads</li><li>Discussion forums</li><li>Assignment submission</li><li>Attendance marking</li><li>Grades & results</li></ul>
+    </div>
+  </div>
+  <div class="auth-r"><div class="af">
+    <h2>Welcome Back</h2>
+    <p class="sub">Sign in to access your courses.</p>
+    <div class="fg"><label>Email Address</label><input id="l-em" type="email" placeholder="yourmatric@student.lasued.edu.ng" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg"><label>Password</label><input id="l-pw" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"></div</div>
+    <label class="pw-check-row"><input type="checkbox" onchange="showPw('l-pw',this)"> Show password</label>
+    <div class="fl"><span onclick="nav('forgot')">Forgot password?</span></div>
+    <button class="btn btn-p btn-full" onclick="doLogin()">Sign In →</button>
+    <div class="asw" style="margin-top:12px">New student? <span onclick="nav('register')">Create your account</span></div>
+    <div style="margin-top:14px;padding:10px 14px;background:var(--cr);border-radius:8px;font-size:12px;color:var(--mt)">
+      <strong style="color:var(--p2)">Lecturer:</strong> ${CFG.email}<br>
+      <strong style="color:var(--p2)">Students:</strong> Your default password = your matric number (e.g. 251105010001). Change it after first login.
+    </div>
+  </div></div></div>`;
+}
+function rRegister(){
+  const isStu=S.regRole==="student";
+  return `<div class="auth">
+  <div class="auth-l">
+    <h1>Create Your Account</h1>
+    <p class="inst">${CFG.college}<br>${CFG.dept}<br>${CFG.school}<br>${CFG.session}</p>
+    <div class="auth-feats"><h3>Courses This Semester</h3><ul>${COURSES.map(c=>`<li>${c.code} — ${c.level} (${c.units}U ${c.status})</li>`).join("")}</ul></div>
+  </div>
+  <div class="auth-r"><div class="af">
+    <h2>Register</h2>
+    <p class="sub">Register to access all course materials and features.</p>
+    <div class="nbox">📌 Students: enter your full name, matric number, email, and choose a password (minimum 6 characters). Security answer is optional.</div>
+    <div class="rrow"><div class="rr ${isStu?"on":""}" onclick="S.regRole='student';render()">🎓 Student</div><div class="rr ${!isStu?"on":""}" onclick="S.regRole='lecturer';render()">👩‍🏫 Lecturer</div></div>
+    <div class="fg"><label>Full Name *</label><input id="r-name" placeholder="e.g. Adebayo, Oluwaseun T."></div>
+    <div class="fg"><label>${isStu?"Matric Number":"Staff ID"}</label><input id="r-matric" placeholder="${isStu?"251105010001":"LASUED/STF/001"}"></div>
+    <div class="fg"><label>Email *</label><input id="r-em" type="email" placeholder="your.email@example.com"></div>
+    <div class="fg"><label>Password * (min 6 chars)</label><div class="pw-wrap"><input id="r-pw" type="password" placeholder="Choose a secure password (min 6 chars)"></div></div>
+    <label class="pw-check-row"><input type="checkbox" onchange="showPw('r-pw',this)"> Show password</label>
+    <div class="fg"><label>Security Answer (optional — for password recovery)</label><input id="r-sa" placeholder="e.g. your mother's name or hometown"></div>
+    <button class="btn btn-p btn-full" onclick="doRegister()">Create Account →</button>
+    <div class="asw">Already registered? <span onclick="nav('login')">Sign in</span></div>
+  </div></div></div>`;
+}
+function rForgot(){
+  return `<div class="auth">
+  <div class="auth-l">
+    <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--g2),var(--g3));display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px">🔐</div>
+    <h1>Reset Your Password</h1>
+    <p class="inst">Enter your email and the security answer you set during registration.</p>
+    <p style="color:rgba(255,255,255,.45);font-size:12px;margin-top:20px">Can't remember your answer? Contact <strong style="color:var(--g3)">${CFG.email}</strong></p>
+  </div>
+  <div class="auth-r"><div class="af">
+    <h2>Forgot Password</h2>
+    <p class="sub">Verify your identity to reset your password.</p>
+    <div class="fg"><label>Email Address *</label><input id="f-em" type="email" placeholder="Your registered email"></div>
+    <div class="fg"><label>Security Answer *</label><input id="f-sa" placeholder="Your answer (lowercase)"></div>
+    <div class="fg"><label>New Password *</label><div class="pw-wrap"><input id="f-np" type="password" placeholder="New password (min 6 chars)"></div></div><label class="pw-check-row"><input type="checkbox" onchange="showPw(['f-np','f-cp'],this)"> Show passwords</label>
+    <div class="fg"><label>Confirm New Password *</label><div class="pw-wrap"><input id="f-cp" type="password" placeholder="Repeat new password"></div></div>
+    <button class="btn btn-p btn-full" onclick="doForgot()">Reset Password →</button>
+    <div class="asw"><span onclick="nav('login')">← Back to Sign In</span></div>
+  </div></div></div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// PORTAL SHELL
+// ═══════════════════════════════════════════════════════
+function rPortal(){
+  const pg=S.pg;const pend=pendG();
+  const uL=ls("logo-uni",null);const dL=ls("logo-dept",null);
+  const title={dashboard:"Dashboard",courses:"All Courses",forum:"Forum",assignments:"Assignments",grading:"Grading Portal",results:"Results",announcements:"Announcements",attendance:"Attendance",profile:"My Profile",howto:"Share with Students",course:S.course||""}[pg]||"";
+  return `<div class="portal">
+  <div class="sidebar" id="sb">
+    <div class="sl"><div class="sl-ic">🎭</div><div class="sl-t"><h3>Theatre Arts Portal</h3><span>LASUED ${CFG.session.split("—")[0].trim()}</span></div></div>
+        <div class="sl-lg">
+      <div class="sl-lgt"><img src=getLogo("UNILOGO") alt="LASUED"></div>
+      <div class="sl-lgt"><img src=getLogo("UNILOGO") alt="THA">
+    <nav class="snav">
+      <div class="ns"><div class="nst">Main</div>
+        <div class="ni ${pg==="dashboard"?"on":""}" onclick="nav('dashboard')">🏠 Dashboard</div>
+        <div class="ni ${pg==="courses"?"on":""}" onclick="nav('courses')">📚 All Courses</div>
+        <div class="ni ${pg==="announcements"?"on":""}" onclick="nav('announcements')">📢 Announcements</div>
+      </div>
+      <div class="ns"><div class="nst">Academic</div>
+        <div class="ni ${pg==="forum"?"on":""}" onclick="nav('forum')">💬 Forum</div>
+        <div class="ni ${pg==="assignments"?"on":""}" onclick="nav('assignments')">📝 Assignments</div>
+        <div class="ni ${pg==="attendance"?"on":""}" onclick="nav('attendance')">📋 Attendance</div>
+        ${S.role==="lecturer"?`<div class="ni ${pg==="grading"?"on":""}" onclick="nav('grading')">✏️ Grading ${pend>0?`<span class="bx">${pend}</span>`:""}</div>`:""}
+        <div class="ni ${pg==="results"?"on":""}" onclick="nav('results')">📊 Results</div>
+      </div>
+      <div class="ns"><div class="nst">Account</div>
+        <div class="ni ${pg==="profile"?"on":""}" onclick="nav('profile')">👤 My Profile</div>
+        ${S.role==="lecturer"?`<div class="ni ${pg==="howto"?"on":""}" onclick="nav('howto')">🚀 Share Portal</div>`:""}
+        <div class="ni" onclick="doLogout()">🚪 Sign Out</div>
+      </div>
+    </nav>
+    <div class="sftr"><div class="uchip">
+      <div class="uav">${(S.user?.name||"U")[0]}</div>
+      <div class="uinfo"><h4>${S.user?.name||""}</h4><span>${S.role}</span></div>
+    </div></div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <button class="mb" onclick="togSB()">☰</button>
+      <h2>${title}</h2>
+      ${["dashboard","courses"].includes(pg)?`<div class="sbar"><span>🔍</span><input placeholder="Search..." value="${S.search}" oninput="S.search=this.value;render()"></div>`:""}
+    </div>
+    <div class="content">
+      ${pg==="dashboard"?rDash():pg==="courses"?rCourses():pg==="course"?rCoursePg():
+        pg==="forum"?rForum():pg==="assignments"?rAssignPg():pg==="attendance"?rAttPage():
+        pg==="grading"?rGrading():pg==="results"?rResults():pg==="announcements"?rAnnounce():
+        pg==="profile"?rProfile():pg==="howto"?rHowTo():pg==="feedback"?rMyFeedback():""}
+    </div>
+  </div></div>`;
+}
+
+// ── DASHBOARD ───────────────────────────────────────────────
+function rDash(){
+  const cs=COURSES.filter(c=>!S.search||c.code.toLowerCase().includes(S.search.toLowerCase())||c.title.toLowerCase().includes(S.search.toLowerCase()));
+  const totalAtt=COURSES.reduce((a,c)=>{const sessions=S.data.attendance[ck(c.code)]||[];return a+sessions.length;},0);
+  return `
+  <div class="stats">
+    <div class="sc purple"><div class="sic">📚</div><div class="sn">6</div><div class="sl-">Active Courses</div></div>
+    <div class="sc gold"><div class="sic">🎓</div><div class="sn">${COURSES.reduce((a,c)=>a+c.students,0)}</div><div class="sl-">Students</div></div>
+    <div class="sc silver"><div class="sic">📋</div><div class="sn">${totalAtt}</div><div class="sl-">Attendance Sessions</div></div>
+    <div class="sc red"><div class="sic">⏳</div><div class="sn">${pendG()}</div><div class="sl-">Pending Grades</div></div>
+  </div>
+  ${S.data.announcements.filter(a=>a.urgent).slice(0,1).map(a=>`
+  <div class="ac urgent" style="margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;gap:10px"><h4>🚨 ${a.title}</h4><span class="ctag">${a.course}</span></div>
+    <p>${a.body}</p>
+    <div class="amt"><span>📅 ${a.date}</span><span onclick="nav('announcements')" style="color:var(--p2);cursor:pointer;font-weight:500">All announcements →</span></div>
+  </div>`).join("")}
+  <div class="sh"><h3>Your Courses</h3></div>
+  <div class="cgrid">${cs.map(c=>`
+  <div class="cc" onclick="openC('${c.code}')">
+    <div class="cc-h" style="background:${c.bg}" data-ic="${c.ic}">
+      <div class="cc-code">${c.code}</div><h3>${c.title}</h3>
+    </div>
+    <div class="cc-b"><div class="cc-m">
+      <span class="lvl">${c.level}</span>
+      <span class="sts sts-${c.status}" title="${c.status==="C"?"Compulsory":c.status==="E"?"Elective":"Required"}">${c.units}U — ${c.status}</span>
+    </div></div>
+    <div class="cc-f">
+      <span>💬 ${(S.data.threads[ck(c.code)]||[]).length}</span>
+      <span>📋 ${(S.data.attendance[ck(c.code)]||[]).length} sess.</span>
+      <span>📝 ${(S.data.assignments[ck(c.code)]||[]).length}</span>
+    </div>
+  </div>`).join("")}</div>`;
+}
+
+function rCourses(){
+  const cs=COURSES.filter(c=>!S.search||c.code.toLowerCase().includes(S.search.toLowerCase())||c.title.toLowerCase().includes(S.search.toLowerCase()));
+  return `<div class="cgrid">${cs.map(c=>`
+  <div class="cc" onclick="openC('${c.code}')">
+    <div class="cc-h" style="background:${c.bg}" data-ic="${c.ic}">
+      <div class="cc-code">${c.code}</div><h3>${c.title}</h3>
+    </div>
+    <div class="cc-b"><div class="cc-m">
+      <span class="lvl">${c.level}</span>
+      <span class="sts sts-${c.status}">${c.units}U — ${c.status==="C"?"Compulsory":c.status==="E"?"Elective":"Required"}</span>
+    </div></div>
+    <div class="cc-f"><span>👥 ${c.students}</span><span>📁 ${(S.data.files[ck(c.code)]||[]).length} files</span><span>📝 ${(S.data.assignments[ck(c.code)]||[]).length} tasks</span></div>
+  </div>`).join("")}</div>`;
+}
+
+// ── COURSE PAGE ─────────────────────────────────────────────
+function rCoursePg(){
+  const c=cobj(S.course);if(!c)return"";
+  const k=ck(c.code);
+  return `
+  <div class="back" onclick="nav('courses')">← Back to Courses</div>
+  <div class="chero" style="background:${c.bg}" data-ic="${c.ic}">
+    <p class="cl">${c.code} · ${c.level} · ${c.units} Units · ${c.status==="C"?"Compulsory":c.status==="E"?"Elective":"Required"} · ${c.students} students</p>
+    <h2>${c.title}</h2>
+    <p class="cm">📁 ${(S.data.files[k]||[]).length} materials · 💬 ${(S.data.threads[k]||[]).length} threads · 📝 ${(S.data.assignments[k]||[]).length} assignments · 📋 ${(S.data.attendance[k]||[]).length} attendance sessions</p>
+  </div>
+  <div class="ctabs">
+    ${[["overview","📋 Overview"],["materials","📁 Materials"],["forum","💬 Forum"],["assignments","📝 Assignments"],["attendance","📋 Attendance"]].map(([t,l])=>`<div class="ctab ${S.tab===t?"on":""}" onclick="setTab('${t}')">${l}</div>`).join("")}
+  </div>
+  ${S.tab==="overview"?rCOverview(c):S.tab==="materials"?rCMat(c):S.tab==="forum"?rCForum(c):S.tab==="assignments"?rCAssign(c):S.tab==="attendance"?rCAttendance(c):""}`;
+}
+
+function rCOverview(c){
+  const k=ck(c.code);const subs=S.data.submissions[k]||[];
+  const attSess=S.data.attendance[k]||[];
+  return `<div class="g2">
+  <div class="panel"><h3>Course Information</h3>
+    ${[["Code",c.code],["Title",c.title],["Level",c.level],["Units",c.units+" Credit Units"],["Status",c.status==="C"?"Compulsory":c.status==="E"?"Elective":"Required"],["Students",c.students],["Semester",CFG.session],["Lecturer",CFG.name]].map(([k,v])=>`<div class="prow"><span>${k}</span><span>${v}</span></div>`).join("")}
+  </div>
+  <div class="panel"><h3>Activity Summary</h3>
+    ${[["Materials Uploaded",(S.data.files[ck(c.code)]||[]).length],["Forum Threads",(S.data.threads[ck(c.code)]||[]).length],["Assignments Published",(S.data.assignments[ck(c.code)]||[]).length],["Submissions Received",subs.length],["Attendance Sessions",attSess.length],["Pending Grades",subs.filter(s=>s.grade===null||s.grade===undefined).length]].map(([k,v])=>`<div class="prow"><span>${k}</span><span style="font-weight:700;color:var(--p2)">${v}</span></div>`).join("")}
+  </div></div>
+  <div class="panel" style="margin-top:0"><h3>Course Description</h3><p style="font-size:13.5px;line-height:1.85;color:#555">${c.desc}</p></div>`;
+}
+
+function rCMat(c){
+  const k=ck(c.code);const files=S.data.files[k]||[];const isLec=S.role==="lecturer";
+  const km=(KNOWN.find(x=>x.course===c.code)||{items:[]}).items;
+  return `<div>
+  ${isLec?`<div class="panel" style="border:1.5px solid var(--p3)">
+    <h3>📤 Upload Material</h3>
+    <p style="font-size:13px;color:var(--mt);margin-bottom:14px">Upload lecture notes, handouts, slides, readings, audio/video. Max 4 MB per file. Use a Google Drive link for larger files.</p>
+    <div class="uz" onclick="document.getElementById('fi-${k}').click()"><h4 style="font-size:16px;color:var(--mid)">📎 Click to select a file</h4><p style="font-size:13px;color:var(--mt)">PDF, Word, PowerPoint, Image — Max 4 MB</p></div>
+    <input type="file" id="fi-${k}" style="display:none" onchange="document.getElementById('fn-${k}').value=this.files[0]?.name||''">
+    <div class="fg"><label>File Title / Description</label><input id="fn-${k}" placeholder="e.g. Week 3 Handout — Character Voice"></div>
+    <button class="btn btn-p btn-sm" onclick="uploadFile('${c.code}')">Upload File</button>
+    <div class="div"></div>
+    <h4 style="font-size:15px;color:var(--p1);margin-bottom:10px">🔗 Add External Link (Google Drive, YouTube, etc.)</h4>
+    <div class="g2">
+      <div class="fg"><label>Resource Name</label><input id="ln-${k}" placeholder="e.g. Week 5 Lecture Video"></div>
+      <div class="fg"><label>URL</label><input id="lu-${k}" placeholder="https://drive.google.com/..."></div>
+    </div>
+    <button class="btn btn-sv btn-sm" onclick="addLink('${c.code}')">Add Link</button>
+  </div>`:""}
+  ${files.length>0?`<div class="sh" style="margin-top:4px"><h3 style="font-size:17px">Uploaded Files (${files.length})</h3></div>`:""}
+  ${files.map(f=>`<div class="file-item">
+    <div style="font-size:26px">${f.type==="link"?"🔗":f.name.endsWith(".pdf")?"📄":f.name.match(/\.(pptx?|ppt)$/i)?"📊":f.name.match(/\.(docx?|doc)$/i)?"📝":f.name.match(/\.(jpg|png|jpeg)$/i)?"🖼️":"📎"}</div>
+    <div style="flex:1"><div style="font-size:13.5px;font-weight:600">${f.desc||f.name}</div><div style="font-size:11.5px;color:var(--mt)">${f.type==="link"?"External link":"📎 "+f.name} · ${f.size} · ${f.uploaded}</div></div>
+    <button class="btn btn-o btn-sm" onclick="dlFile(${f.id},'${c.code}')">${f.type==="link"?"Open ↗":"Download"}</button>
+    ${isLec?`<button class="btn btn-d btn-sm" onclick="delFile('${c.code}',${f.id})">✕</button>`:""}
+  </div>`).join("")}
+  ${km.length>0?`<div class="panel" style="margin-top:16px;border:1.5px dashed var(--p4)">
+    <h3 style="font-size:16px">📂 Previously Generated Materials — Upload Needed</h3>
+    <p style="font-size:13px;color:var(--mt);margin-bottom:12px">The following documents were generated in your earlier Claude sessions. Locate them in your Downloads folder and upload them above using the file uploader.</p>
+    ${km.map((m,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--br)">
+      <span style="font-size:11px;font-weight:700;color:var(--p4);min-width:24px">${i+1}.</span>
+      <span style="font-size:13px;color:#444;flex:1">${m}</span>
+      <span style="font-size:10.5px;background:var(--cr);border:1px solid var(--br);color:var(--mt);padding:2px 7px;border-radius:4px;flex-shrink:0">Pending upload</span>
+    </div>`).join("")}
+  </div>`:""}
+  ${files.length===0&&km.length===0?`<div class="empty"><div class="ei">📁</div><h4>No materials yet</h4><p>${isLec?"Upload your first file above.":"Your lecturer has not uploaded any materials yet."}</p></div>`:""}
+  </div>`;
+}
+
+function rCForum(c){
+  const threads=S.data.threads[ck(c.code)]||[];const isNew=S.tab==="new-thread";
+  return `<div>
+  <div class="sh"><h3 style="font-size:18px">Discussion</h3>${!isNew?`<button class="btn btn-p btn-sm" onclick="S.tab='new-thread';render()">+ New Thread</button>`:""}</div>
+  ${isNew?`<div class="panel" style="border-color:var(--p3)"><h3>Post New Thread</h3>
+    <div class="fg"><label>Title *</label><input id="nt-t" placeholder="e.g. Question about Week 5 assignment..."></div>
+    <div class="fg"><label>Message *</label><textarea id="nt-b" rows="4" placeholder="Write your question or discussion point..."></textarea></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-p" onclick="postThread('${c.code}')">Post</button><button class="btn btn-gh" onclick="S.tab='forum';render()">Cancel</button></div>
+  </div>`:""}
+  ${threads.length===0&&!isNew?`<div class="empty"><div class="ei">💬</div><h4>No discussions yet</h4></div>`:""}
+  ${threads.map(t=>`<div class="thread" onclick="togTh(${t.id})">
+    <div class="tmeta">
+      <div class="tav ${t.role}">${t.author[0]}</div>
+      <div class="tinfo"><h4>${t.title}</h4><div class="ts"><span class="tag tag-${t.role}">${t.role}</span> ${t.author} · ${t.time}</div></div>
+      <span style="margin-left:auto;font-size:11px;color:var(--mt);flex-shrink:0">${t.replies.length} repl${t.replies.length===1?"y":"ies"} ${openTh===t.id?"▲":"▼"}</span>
+    </div>
+    <div class="tbody">${t.body}</div>
+    ${openTh===t.id?`<div class="rbox" onclick="event.stopPropagation()">
+      ${t.replies.map(r=>`<div class="repl ${r.role}"><div class="rau">${r.author} · ${r.time}</div><div class="rb">${r.body}</div></div>`).join("")}
+      <textarea class="rep-ta" id="rep-${t.id}" placeholder="Write a reply..."></textarea>
+      <button class="btn btn-p btn-sm" style="margin-top:7px" onclick="event.stopPropagation();postReply('${c.code}',${t.id})">Reply</button>
+    </div>`:""}
+  </div>`).join("")}
+  </div>`;
+}
+
+function rCAssign(c){
+  const k=ck(c.code);const assigns=S.data.assignments[k]||[];const subs=S.data.submissions[k]||[];
+  const isLec=S.role==="lecturer";const isNew=S.tab==="new-assignment";
+  return `<div>
+  <div class="sh"><h3 style="font-size:18px">Assignments</h3>${isLec&&!isNew?`<button class="btn btn-p btn-sm" onclick="S.tab='new-assignment';render()">+ Create</button>`:""}</div>
+  ${isLec&&isNew?`<div class="panel" style="border-color:var(--p3)"><h3>New Assignment — ${c.code}</h3>
+    <div class="fg"><label>Title *</label><input id="na-t" placeholder="Assignment title"></div>
+    <div class="g2"><div class="fg"><label>Due Date *</label><input id="na-d" placeholder="e.g. May 10, 2026"></div><div class="fg"><label>Max Score</label><input id="na-m" type="number" value="40"></div></div>
+    <div class="fg"><label>Instructions</label><textarea id="na-ds" rows="3" placeholder="Full brief..."></textarea></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-p" onclick="createAssign('${c.code}')">Publish</button><button class="btn btn-gh" onclick="S.tab='assignments';render()">Cancel</button></div>
+  </div>`:""}
+  ${assigns.length===0&&!isNew?`<div class="empty"><div class="ei">📝</div><h4>No assignments yet</h4></div>`:""}
+  ${assigns.map(a=>{
+    const asubs=subs.filter(s=>s.assignId===a.id);const mySub=asubs.find(s=>s.student===S.user?.name);
+    return`<div class="acard">
+      <div class="ahead"><div><div class="atitle">${a.title}</div><div class="ameta">Max: ${a.max} pts · Posted: ${a.createdAt}</div></div><span class="due-b">📅 ${a.due}</span></div>
+      <div class="adesc">${a.desc}</div>
+      ${!isLec&&!mySub?`<button class="btn btn-p btn-sm" style="margin-top:12px" onclick="submitAssign('${c.code}',${a.id})">📤 Submit</button>`:""}
+      ${!isLec&&mySub?`<div class="sub-ok">✅ Submitted · ${mySub.grade!==null?"Grade: "+mySub.grade+"/"+a.max+" ("+grade(mySub.grade).l+")"+(mySub.feedback?" — "+mySub.feedback:""):"⏳ Awaiting grade"}</div>`:""}
+      ${isLec&&asubs.length>0?`<div class="slist"><div style="font-size:12px;font-weight:600;color:var(--mid);margin-bottom:7px">📥 ${asubs.length} submission${asubs.length!==1?"s":""}</div>
+        ${asubs.map(s=>`<div class="sitem"><div><div class="sname">${s.student}</div><div class="smeta">${s.matric?" · "+s.matric:""} ${s.file} · ${s.time}</div></div>
+          <div style="display:flex;align-items:center;gap:7px"><span class="gc ${grade(s.grade).cl}">${s.grade!==null?s.grade+"/"+a.max+" ("+grade(s.grade).l+")":"Pending"}</span>
+          <button class="btn btn-o btn-sm" onclick="openGM('${c.code}',${a.id},'${s.student.replace(/'/g,"\\'")}')">Grade</button></div></div>`).join("")}
+      </div>`:""}
+    </div>`;}).join("")}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// ATTENDANCE RENDER
+// ══════════════════════════════════════════════════════
+function rCAttendance(c){
+  const k=ck(c.code);const sessions=S.data.attendance[k]||[];
+  const isLec=S.role==="lecturer";
+  const openSess=sessions.find(s=>s.open);
+  // Get enrolled students for this course from roster
+  const enrolled=ROSTER.filter(r=>r.course===c.code);
+
+  if(isLec){
+    return `<div>
+    ${openSess?`
+    <!-- KIOSK MODE: Student self-check-in form -->
+    <div style="background:#FFF8E1;border:2px solid #FFB300;border-radius:14px;padding:20px;margin-bottom:20px">
+      <h3 style="color:#7A4400;margin-bottom:10px">📱 Pass-Around Sign-In</h3>
+      <p style="font-size:13px;color:#8B6500;margin-bottom:12px">Pass this device to each student. They type their name and the code, then click Mark Me Present. Form auto-clears for the next student.</p>
+      <div class="g2">
+        <div class="fg" style="margin-bottom:8px"><label style="font-size:12px">Student Name or Matric Number</label><input id="kiosk-name" placeholder="Type your name or matric number" autofocus style="font-size:15px"></div>
+        <div class="fg" style="margin-bottom:8px"><label style="font-size:12px">Session Code (6 chars)</label><input id="kiosk-code" maxlength="6" placeholder="e.g. AB12CD" style="font-size:15px;text-transform:uppercase;letter-spacing:3px;font-weight:600"></div>
+      </div>
+      <button class="btn btn-p btn-full" onclick="kioskMark('${c.code}')" style="font-size:16px;padding:12px">✅ Mark Me Present</button>
+    </div>
+    
+    <!-- ACTIVE SESSION CODE DISPLAY -->
+    <div class="att-code-box">
+      <div class="att-status-open"><span style="width:8px;height:8px;background:#7FFFB0;border-radius:50%;display:inline-block"></span> Session Open</div>
+      <div class="att-code-label">Session Code — Show this to your class</div>
+      <div class="att-code" id="live-code">${getActiveCode(openSess)||"------"}</div>
+      <div id="code-timer" style="font-size:12px;color:rgba(255,255,255,.55);margin-top:-8px;margin-bottom:8px">Changes every 2 minutes</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6)">${openSess.date} · ${openSess.topic} · Grace period: ${openSess.graceMins} minutes</div>
+      <div class="att-code-tip">✅ Present = within ${openSess.graceMins} min &nbsp;·&nbsp; 🕐 Late = after ${openSess.graceMins} min &nbsp;·&nbsp; Each student can only mark once</div>
+    </div>
+    <div class="sh">
+      <h3 style="font-size:17px">Class Register — ${openSess.date}</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" style="background:#D4EFDF;color:#1A6B3A" onclick="addAbsentees('${c.code}',${openSess.id})">Mark Remaining Absent</button>
+        ${sessions.filter(s=>!s.open).length>0?`<button class="btn btn-o btn-sm" onclick="exportAttendanceCSV('${c.code}')">📥 CSV (All Sessions)</button>`:""}
+        <button class="btn btn-d btn-sm" onclick="closeAttSession('${c.code}',${openSess.id})">Close Session</button>
+      </div>
+    </div>
+    ${rAttRegister(openSess,c.code,enrolled,true)}`:""}
+
+    ${!openSess?`
+    <!-- START NEW SESSION -->
+    <div class="panel" style="border:1.5px solid var(--p3);margin-bottom:20px">
+      <h3>📋 Open Attendance Session</h3>
+      <p style="font-size:13px;color:var(--mt);margin-bottom:14px">A unique 6-character code will be generated. Show it to your class. Students have <strong>${CFG.graceMins} minutes</strong> to mark Present; after that they are marked Late.</p>
+      <div class="g2">
+        <div class="fg"><label>Class Topic / Week</label><input id="att-topic" placeholder="e.g. Week 5 — Narrative Voice"></div>
+        <div class="fg"><label>Grace Period (minutes)</label><input id="att-grace" type="number" value="${CFG.graceMins}" min="5" max="30"></div>
+      </div>
+      <button class="btn btn-p" onclick="openAttSession('${c.code}')">🔓 Open Session &amp; Generate Code</button>
+    </div>`:""}
+
+    <!-- PAST SESSIONS -->
+    ${sessions.filter(s=>!s.open).length>0?`
+    <div class="sh"><h3 style="font-size:17px">Past Sessions</h3><button class="btn btn-o btn-sm" onclick="exportAttendanceCSV('${c.code}')">📥 Export All to CSV</button></div>
+    ${sessions.filter(s=>!s.open).map(s=>{
+      const pres=s.records.filter(r=>r.status==="present").length;
+      const late=s.records.filter(r=>r.status==="late").length;
+      const abs=s.records.filter(r=>r.status==="absent").length;
+      return `<div class="att-summary-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div><div style="font-size:15px;font-weight:600;color:var(--dk)">${s.date} — ${s.topic}</div>
+          <div style="font-size:12px;color:var(--mt)">${s.manual?"Manually recorded":"Closed session"} · ${s.records.length} students</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="att-chip att-present">✅ ${pres} Present</span>
+            <span class="att-chip att-late">🕐 ${late} Late</span>
+            <span class="att-chip att-absent">❌ ${abs} Absent</span>
+          </div>
+        </div>
+        <details style="margin-top:12px">
+          <summary style="font-size:13px;cursor:pointer;color:var(--p2);font-weight:500">View full register ▾</summary>
+          <div style="margin-top:10px">${rAttRegister(s,c.code,enrolled,false)}</div>
+        </details>
+      </div>`;}).join("")}
+    `:""}
+    ${sessions.length===0?`<div class="empty"><div class="ei">📋</div><h4>No sessions yet</h4><p>Open your first session above to begin taking attendance.</p></div>`:""}
+    </div>`;
+  } else {
+    // STUDENT VIEW
+    const myRecords=sessions.map(s=>{const r=s.records.find(x=>x.student===S.user?.name);return{...s,myStatus:r?.status||null,myTime:r?.time||"—"};});
+    const totalSess=sessions.filter(s=>!s.open).length;
+    const myPres=myRecords.filter(s=>!s.open&&s.myStatus==="present").length;
+    const myLate=myRecords.filter(s=>!s.open&&s.myStatus==="late").length;
+    const myAbs=myRecords.filter(s=>!s.open&&s.myStatus==="absent").length;
+    return `<div>
+    ${openSess?`
+    <div class="att-student-entry">
+      <h3>📋 Attendance Open</h3>
+      <p><strong>${openSess.date} — ${openSess.topic}</strong><br>Enter the code shown by your lecturer to mark your attendance.<br>You have <strong>${openSess.graceMins} minutes</strong> from when the session opened to be marked Present.</p>
+      ${openSess.records.find(r=>r.student===S.user?.name&&r.status)?
+        `<div style="margin:16px 0"><span class="att-chip ${openSess.records.find(r=>r.student===S.user?.name).status==="present"?"att-present":"att-late"}" style="font-size:14px;padding:8px 18px">
+          ${openSess.records.find(r=>r.student===S.user?.name).status==="present"?"✅ PRESENT":"🕐 LATE"}</span>
+          <p style="font-size:12px;color:var(--mt);margin-top:8px">Attendance marked at ${openSess.records.find(r=>r.student===S.user?.name).time}</p></div>` :
+        `<div style="margin:16px 0">
+          <input class="att-code-input" id="att-code-in" maxlength="6" placeholder="· · · · · ·" style="display:block;margin:0 auto 14px">
+          <button class="btn btn-p" onclick="studentMarkAtt('${c.code}')">Mark My Attendance</button>
+        </div>
+        <p style="font-size:12px;color:rgba(74,0,130,.5)">🔒 Anti-proxy: Each account can mark only once. Your identity is tied to your login.</p>`}
+    </div>`:`<div class="nbox pur" style="margin-bottom:20px">ℹ️ No attendance session is currently open for this course. Sessions are opened by your lecturer at the start of class.</div>`}
+    <div class="panel">
+      <h3>My Attendance Summary — ${c.code}</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <span class="att-chip att-present">✅ Present: ${myPres}</span>
+        <span class="att-chip att-late">🕐 Late: ${myLate}</span>
+        <span class="att-chip att-absent">❌ Absent: ${myAbs}</span>
+        <span class="att-chip att-unmarked">Total: ${totalSess} sessions</span>
+        ${totalSess>0?`<span class="att-chip" style="background:rgba(74,0,130,.1);color:var(--p2)">Attendance: ${Math.round(((myPres+myLate)/totalSess)*100)}%</span>`:""}
+      </div>
+      ${myRecords.filter(s=>!s.open).map(s=>`<div class="att-reg-row">
+        <div><div class="att-reg-name">${s.date} — ${s.topic}</div></div>
+        <span class="att-chip ${s.myStatus==="present"?"att-present":s.myStatus==="late"?"att-late":s.myStatus==="absent"?"att-absent":"att-unmarked"}">${s.myStatus?s.myStatus.toUpperCase():"—"}</span>
+      </div>`).join("")}
+      ${totalSess===0?`<p style="font-size:13px;color:var(--mt)">No completed sessions yet.</p>`:""}
+    </div></div>`;
+  }
+}
+
+function rAttRegister(sess,code,enrolled,isOpen){
+  const allRecords=[...sess.records];
+  // Add enrolled students not in records yet
+  enrolled.forEach(s=>{if(!allRecords.find(r=>r.student===s.name))allRecords.push({student:s.name,matric:s.matric,status:null,selfMarked:false,time:null});});
+  if(allRecords.length===0)return`<p style="font-size:13px;color:var(--mt)">No students enrolled. Upload student lists to populate the register.</p>`;
+  return `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+    <thead><tr style="background:var(--cr)">
+      ${["Student","Matric","Status","Time",""].map(h=>`<th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--mt);text-transform:uppercase;white-space:nowrap">${h}</th>`).join("")}
+    </tr></thead>
+    <tbody>
+    ${allRecords.map(r=>`<tr style="border-top:1px solid var(--br)">
+      <td style="padding:8px 12px;font-size:13px;font-weight:500">${r.student}${r.selfMarked?`<span style="font-size:10px;color:var(--su);margin-left:5px">📱self</span>`:""}</td>
+      <td style="padding:8px 12px;font-size:12px;color:var(--mt)">${r.matric||"—"}</td>
+      <td style="padding:8px 12px"><span class="att-chip ${r.status==="present"?"att-present":r.status==="late"?"att-late":r.status==="absent"?"att-absent":"att-unmarked"}">${r.status?r.status.toUpperCase():"Unmarked"}</span></td>
+      <td style="padding:8px 12px;font-size:12px;color:var(--mt)">${r.time||"—"}</td>
+      <td style="padding:8px 12px">${isOpen?`<div class="att-action-btns">
+        <button class="att-sm att-sm-p" onclick="markStudent('${code}',${sess.id},'${r.student.replace(/'/g,"\\'")}','present')">P</button>
+        <button class="att-sm att-sm-l" onclick="markStudent('${code}',${sess.id},'${r.student.replace(/'/g,"\\'")}','late')">L</button>
+        <button class="att-sm att-sm-a" onclick="markStudent('${code}',${sess.id},'${r.student.replace(/'/g,"\\'")}','absent')">A</button>
+      </div>`:""}</td>
+    </tr>`).join("")}
+    </tbody>
+  </table></div>`;
+}
+
+// ── ATTENDANCE MAIN PAGE ─────────────────────────────────────
+function rAttPage(){
+  const isLec=S.role==="lecturer";
+  return `<div>
+  <div class="cf">${COURSES.map(c=>`<div class="cf-btn ${S.attCourse===c.code?"on":""}" onclick="S.attCourse='${c.code}';render()">${c.code}</div>`).join("")}</div>
+  ${(()=>{const c=cobj(S.attCourse);if(!c)return"";
+    const k=ck(c.code);const sessions=S.data.attendance[k]||[];
+    if(isLec){
+      return`<div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+        <div style="flex:1"><h3 style="font-size:18px;color:var(--p1)">${c.code} — ${c.title}</h3>
+        <p style="font-size:13px;color:var(--mt)">${sessions.length} sessions recorded · ${sessions.filter(s=>!s.open).length} closed</p></div>
+        <button class="btn btn-p" onclick="openC('${c.code}');S.tab='attendance';render()">Open Attendance Register →</button>
+      </div>
+      ${sessions.length===0?`<div class="empty"><div class="ei">📋</div><h4>No sessions for ${c.code} yet</h4><p>Go to the course page to open an attendance session.</p></div>`:""}
+      ${sessions.slice(0,5).map(s=>{
+        const pres=s.records.filter(r=>r.status==="present").length;
+        const late=s.records.filter(r=>r.status==="late").length;
+        const abs=s.records.filter(r=>r.status==="absent").length;
+        return`<div class="att-summary-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <div><div style="font-size:14px;font-weight:600">${s.date} · ${s.topic}</div>
+            <div style="font-size:11.5px;color:var(--mt)">Code: ${s.code} · ${s.open?"🟢 Open":"Closed"}</div></div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <span class="att-chip att-present">✅ ${pres}</span>
+              <span class="att-chip att-late">🕐 ${late}</span>
+              <span class="att-chip att-absent">❌ ${abs}</span>
+            </div>
+          </div>
+        </div>`;}).join("")}`;
+    } else {
+      const myRecs=sessions.map(s=>{const r=s.records.find(x=>x.student===S.user?.name);return{date:s.date,topic:s.topic,status:r?.status||null,open:s.open};});
+      const done=myRecs.filter(r=>!r.open);
+      const pres=done.filter(r=>r.status==="present").length;const late=done.filter(r=>r.status==="late").length;const abs=done.filter(r=>r.status==="absent").length;
+      return`<h3 style="font-size:18px;color:var(--p1);margin-bottom:4px">${c.code} — My Attendance</h3>
+      <p style="font-size:13px;color:var(--mt);margin-bottom:16px">${done.length} sessions · ${done.length>0?Math.round(((pres+late)/done.length)*100)+"% attendance rate":""}</p>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <span class="att-chip att-present">✅ Present: ${pres}</span>
+        <span class="att-chip att-late">🕐 Late: ${late}</span>
+        <span class="att-chip att-absent">❌ Absent: ${abs}</span>
+      </div>
+      ${done.map(r=>`<div class="att-reg-row"><div><span class="att-reg-name">${r.date}</span><span class="att-reg-meta" style="margin-left:8px">${r.topic}</span></div>
+        <span class="att-chip ${r.status==="present"?"att-present":r.status==="late"?"att-late":r.status==="absent"?"att-absent":"att-unmarked"}">${r.status?r.status.toUpperCase():"—"}</span>
+      </div>`).join("")}
+      ${sessions.find(s=>s.open)?`<div style="margin-top:16px"><button class="btn btn-p" onclick="openC('${c.code}');S.tab='attendance';render()">Mark Today's Attendance →</button></div>`:""}
+      ${done.length===0?`<p style="font-size:13px;color:var(--mt)">No completed sessions yet.</p>`:""}`;
+    }
+  })()}
+  </div>`;
+}
+
+// ── FORUM ALL ────────────────────────────────────────────────
+function rForum(){
+  return `<div>${COURSES.map(c=>{
+    const threads=S.data.threads[ck(c.code)]||[];
+    return`<div style="margin-bottom:26px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap">
+        <div style="width:8px;height:8px;border-radius:50%;background:${c.bg}"></div>
+        <h4 style="font-size:15px;color:var(--p1)">${c.code} — ${c.title}</h4>
+        <button class="btn btn-p btn-sm" style="margin-left:auto" onclick="openC('${c.code}');S.tab='new-thread';render()">+ Thread</button>
+      </div>
+      ${threads.length===0?`<p style="font-size:13px;color:var(--mt);margin-left:16px">No discussions yet.</p>`:""}
+      ${threads.slice(0,3).map(t=>`<div class="thread" onclick="togTh('f-${c.code}-${t.id}')">
+        <div class="tmeta">
+          <div class="tav ${t.role}">${t.author[0]}</div>
+          <div class="tinfo"><h4>${t.title}</h4><div class="ts"><span class="tag tag-${t.role}">${t.role}</span> ${t.author} · ${t.time}</div></div>
+          <span style="margin-left:auto;font-size:11px;color:var(--mt)">${t.replies.length} repl${t.replies.length===1?"y":"ies"}</span>
+        </div>
+        <div class="tbody">${t.body}</div>
+        ${openTh===`f-${c.code}-${t.id}`?`<div class="rbox" onclick="event.stopPropagation()">
+          ${t.replies.map(r=>`<div class="repl ${r.role}"><div class="rau">${r.author}</div><div class="rb">${r.body}</div></div>`).join("")}
+          <textarea class="rep-ta" id="rfr-${c.code}-${t.id}" placeholder="Reply..."></textarea>
+          <button class="btn btn-p btn-sm" style="margin-top:7px" onclick="event.stopPropagation();(function(){const el=document.getElementById('rfr-${c.code}-${t.id}');if(!el||!el.value.trim())return;const k='${ck(c.code)}';S.data.threads[k]=S.data.threads[k].map(th=>th.id===${t.id}?{...th,replies:[...th.replies,{author:S.user.name,role:S.role,body:el.value.trim(),time:dateNow()}]}:th);saveT('${c.code}');openTh='f-${c.code}-${t.id}';render();notify('Reply posted.');})()">Reply</button>
+        </div>`:""}
+      </div>`).join("")}
+      ${threads.length>3?`<p style="font-size:12.5px;color:var(--p2);cursor:pointer;margin-left:2px" onclick="openC('${c.code}');S.tab='forum'">View all ${threads.length} threads →</p>`:""}
+    </div>`;}).join("")}</div>`;
+}
+
+// ── ASSIGNMENTS ALL ──────────────────────────────────────────
+function rAssignPg(){
+  return `<div>${COURSES.map(c=>{
+    const assigns=S.data.assignments[ck(c.code)]||[];const subs=S.data.submissions[ck(c.code)]||[];
+    return`<div style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${c.bg}"></div>
+        <h4 style="font-size:15px;color:var(--p1)">${c.code} — ${c.title}</h4>
+      </div>
+      ${assigns.map(a=>{
+        const mySub=subs.find(s=>s.assignId===a.id&&s.student===S.user?.name);
+        const asubs=subs.filter(s=>s.assignId===a.id);
+        return`<div class="acard">
+          <div class="ahead"><div><div class="atitle">${a.title}</div><div class="ameta">Max: ${a.max} pts · Due: ${a.due}</div></div><span class="due-b">${a.due}</span></div>
+          ${S.role==="student"&&!mySub?`<button class="btn btn-p btn-sm" style="margin-top:11px" onclick="submitAssign('${c.code}',${a.id})">📤 Submit</button>`:""}
+          ${S.role==="student"&&mySub?`<div class="sub-ok">✅ Submitted · ${mySub.grade!==null?"Grade: "+mySub.grade+"/"+a.max+" ("+grade(mySub.grade).l+")":"Awaiting grade"}</div>`:""}
+          ${S.role==="lecturer"?`<div style="font-size:12.5px;color:var(--mt);margin-top:9px">📥 ${asubs.length} submissions · ⏳ ${asubs.filter(s=>s.grade===null||s.grade===undefined).length} ungraded</div>`:""}
+        </div>`;}).join("")}
+      ${assigns.length===0?`<p style="font-size:13px;color:var(--mt);margin-left:16px">No assignments yet.</p>`:""}
+    </div>`;}).join("")}</div>`;
+}
+
+// ── GRADING ──────────────────────────────────────────────────
+function rGrading(){
+  const fc=S.gradeCourse;const assigns=S.data.assignments[ck(fc)]||[];const subs=S.data.submissions[ck(fc)]||[];
+  return `<div>
+  <div class="cf">${COURSES.map(c=>`<div class="cf-btn ${fc===c.code?"on":""}" onclick="S.gradeCourse='${c.code}';render()">${c.code}</div>`).join("")}</div>
+  ${assigns.length===0?`<div class="empty"><div class="ei">📝</div><h4>No assignments for ${fc}</h4></div>`:""}
+  ${assigns.map(a=>{
+    const asubs=subs.filter(s=>s.assignId===a.id);
+    return`<div style="margin-bottom:18px">
+      <div style="background:var(--p1);color:#fff;padding:11px 16px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <span style="font-weight:600;font-size:14px">${a.title}</span>
+        <span style="font-size:12px;opacity:.75">Max: ${a.max} · Due: ${a.due} · ${asubs.filter(s=>s.grade===null||s.grade===undefined).length} ungraded</span>
+      </div>
+      <div style="background:#fff;border:1px solid var(--br);border-radius:0 0 12px 12px;overflow:hidden">
+        ${asubs.length===0?`<div style="padding:20px;text-align:center;color:var(--mt);font-size:13px">No submissions yet.</div>`:`
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--cr)">${["Student","Matric","File","Submitted","Grade","Action"].map(h=>`<th style="padding:9px 13px;text-align:left;font-size:11px;font-weight:600;color:var(--mt);text-transform:uppercase;white-space:nowrap">${h}</th>`).join("")}</tr></thead>
+          <tbody>${asubs.map(s=>`<tr style="border-top:1px solid var(--br)">
+            <td style="padding:9px 13px;font-size:13px;font-weight:500">${s.student}</td>
+            <td style="padding:9px 13px;font-size:12px;color:var(--mt)">${s.matric||"—"}</td>
+            <td style="padding:9px 13px;font-size:12px;color:var(--mt)">${s.file}</td>
+            <td style="padding:9px 13px;font-size:12px;color:var(--mt);white-space:nowrap">${s.time}</td>
+            <td style="padding:9px 13px"><span class="gc ${grade(s.grade).cl}">${s.grade!==null?s.grade+"/"+a.max+" ("+grade(s.grade).l+")":"Pending"}</span></td>
+            <td style="padding:9px 13px"><button class="btn btn-o btn-sm" onclick="openGM('${fc}',${a.id},'${s.student.replace(/'/g,"\\'")}')">Grade</button>
+              <button class="btn btn-sm" style="background:rgba(74,0,130,.1);color:var(--p2);border:none;padding:5px 10px;font-size:12px;cursor:pointer" onclick="openFeedbackModal('${fc}',${a.id},'${s.student.replace(/'/g,"\\'")}','${a.title.replace(/'/g,"\\'")}')">✍️ Corrections</button></td>
+          </tr>`).join("")}</tbody>
+        </table></div>`}
+      </div>
+    </div>`;}).join("")}
+  </div>`;
+}
+
+// ── RESULTS ──────────────────────────────────────────────────
+function rResults(){
+  const allU=S.data.users.filter(u=>u.role==="student");
+  const vis=S.role==="lecturer"?allU:allU.filter(u=>u.id===S.user?.id);
+  const rows=vis.map(u=>{
+    const scores={};COURSES.forEach(c=>{const best=(S.data.submissions[ck(c.code)]||[]).filter(s=>s.student===u.name&&s.grade!==null);scores[c.code]=best.length?best[best.length-1].grade:null;});
+    return{name:u.name,matric:u.matric,scores};
+  });
+  return `<div>
+  <p style="font-size:13px;color:var(--mt);margin-bottom:18px">${CFG.session} · ${CFG.college}</p>
+  ${rows.length===0?`<div class="empty"><div class="ei">📊</div><h4>No grades yet</h4></div>`:`
+  <div class="rtw"><table class="rtbl"><thead><tr>
+    <th>Student</th><th>Matric</th>${COURSES.map(c=>`<th>${c.code}</th>`).join("")}<th>GPA</th>
+  </tr></thead><tbody>
+  ${rows.map(r=>{
+    const graded=Object.values(r.scores).filter(s=>s!==null);
+    const gpa=graded.length?(graded.reduce((a,b)=>a+b,0)/graded.length/20).toFixed(2):"—";
+    return`<tr><td style="font-weight:500">${r.name}</td><td style="color:var(--mt)">${r.matric||"—"}</td>
+      ${COURSES.map(c=>{const g=grade(r.scores[c.code]);return`<td><span class="gc ${g.cl}">${r.scores[c.code]!==null?r.scores[c.code]+" ("+g.l+")":"—"}</span></td>`;}).join("")}
+      <td><strong style="color:var(--p2)">${gpa}</strong></td></tr>`;}).join("")}
+  </tbody></table></div>`}
+  <div class="panel" style="margin-top:18px;max-width:440px"><h3>Grading Scale</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      ${[["A","70–100","5.0"],["B","60–69","4.0"],["C","50–59","3.0"],["D","45–49","2.0"],["F","0–44","0.0"]].map(([l,r,gp])=>`<div style="background:var(--cr);border:1px solid var(--br);border-radius:8px;padding:8px 12px;text-align:center;min-width:66px"><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--p2)">${l}</div><div style="font-size:11px;color:var(--mt)">${r}</div><div style="font-size:11px;font-weight:600">GP: ${gp}</div></div>`).join("")}
+    </div>
+  </div></div>`;
+}
+
+// ── TESTS ────────────────────────────────────────────────────
+function escapeHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+function rTests(){
+  if(S.role==="lecturer")return rTestsLec();
+  return rTestsStudent();
+}
+
+function rTestsLec(){
+  const tab=S.testTab||"all";
+  return `<div>
+    <div class="ctabs" style="margin-bottom:20px">
+      ${[["all","📋 All Tests"],["create","➕ Create New"],["bank","📚 Question Bank"],["submissions","✅ Submissions"]].map(([t,l])=>`<div class="ctab ${tab===t?"on":""}" onclick="S.testTab='${t}';S.activeTest=null;S.gradingSub=null;render()">${l}</div>`).join("")}
+    </div>
+    ${tab==="all"?rTestsListLec():
+      tab==="create"?rTestCreateForm():
+      tab==="edit"?rTestEditor():
+      tab==="bank"?rQbankPage():
+      tab==="submissions"?rSubmissionsPage():""}
+  </div>`;
+}
+
+function rTestsListLec(){
+  if(!S.data.tests.length){
+    return `<div class="empty"><div class="ei">🧪</div><h4>No tests yet</h4><p>Click "Create New" to build your first test.</p></div>`;
+  }
+  const sorted=[...S.data.tests].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  return `<div style="display:grid;gap:14px">
+    ${sorted.map(t=>{
+      const subs=S.data.testSubs.filter(s=>s.testId===t.id);
+      const qCount=(t.questions||[]).length;
+      const totalPts=(t.questions||[]).reduce((a,q)=>a+(q.points||0),0);
+      return `<div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div style="flex:1;min-width:240px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <h3 style="margin:0">${escapeHtml(t.title)}</h3>
+              ${t.published?`<span style="background:var(--su);color:#fff;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600">PUBLISHED</span>`:`<span style="background:var(--sv);color:#fff;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600">DRAFT</span>`}
+            </div>
+            <p class="cm" style="margin-top:6px">📘 ${t.course} · ${qCount} questions · ${totalPts} pts ${t.duration?"· ⏱️ "+t.duration+" min":"· No timer"} · 📥 ${subs.length} submissions</p>
+            ${t.instructions?`<p style="font-size:12px;color:var(--mt);margin-top:6px">${escapeHtml(t.instructions.substring(0,140))}${t.instructions.length>140?"…":""}</p>`:""}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm ${t.published?"btn-sv":"btn-g"}" onclick="togglePublish('${t.id}')">${t.published?"📌 Unpublish":"🚀 Publish"}</button>
+            <button class="btn btn-o btn-sm" onclick="S.activeTest='${t.id}';S.testTab='edit';render()">✏️ Edit</button>
+            ${subs.length>0?`<button class="btn btn-o btn-sm" onclick="exportTestResultsCSV('${t.id}')">📥 CSV</button>`:""}
+            <button class="btn btn-d btn-sm" onclick="deleteTest('${t.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+function rTestCreateForm(){
+  return `<div class="panel" style="border:1.5px solid var(--p3);max-width:680px">
+    <h3>Create a New Test</h3>
+    <p style="font-size:13px;color:var(--mt);margin-bottom:18px">Fill in the basics — you'll add questions on the next screen.</p>
+    <div class="fg"><label>Test Title *</label><input id="nt-title" placeholder="e.g., Mid-Semester Test on Yoruba Drama"></div>
+    <div class="fg"><label>Course *</label><select id="nt-course">${COURSES.map(c=>`<option value="${c.code}">${c.code} — ${c.title}</option>`).join("")}</select></div>
+    <div class="fg"><label>Instructions for Students</label><textarea id="nt-instr" rows="3" placeholder="Read each question carefully. You have one attempt. Good luck!"></textarea></div>
+    <div class="g2">
+      <div class="fg"><label>Duration in Minutes (0 = no timer)</label><input id="nt-dur" type="number" min="0" placeholder="e.g., 30"></div>
+      <div class="fg"><label>Total Points (computed from questions)</label><input value="0" readonly style="background:var(--svl)"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label>Opens At (optional)</label><input id="nt-open" type="datetime-local"></div>
+      <div class="fg"><label>Closes At (optional)</label><input id="nt-close" type="datetime-local"></div>
+    </div>
+    <button class="btn btn-p btn-full" onclick="createTest()">Create Test & Add Questions →</button>
+  </div>`;
+}
+
+function rTestEditor(){
+  const t=S.data.tests.find(x=>x.id===S.activeTest);
+  if(!t)return `<div class="empty"><div class="ei">❓</div><h4>Test not found</h4><button class="btn btn-p btn-sm" onclick="S.testTab='all';render()">← Back to All Tests</button></div>`;
+  const totalPts=(t.questions||[]).reduce((a,q)=>a+(q.points||0),0);
+  return `<div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+      <div>
+        <h3 style="font-size:22px;color:var(--p1)">${escapeHtml(t.title)}</h3>
+        <p style="font-size:12px;color:var(--mt)">${t.course} · ${(t.questions||[]).length} questions · ${totalPts} pts ${t.duration?"· ⏱️ "+t.duration+" min":""}</p>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${t.published?`<button class="btn btn-sv btn-sm" onclick="togglePublish('${t.id}')">📌 Unpublish</button>`:`<button class="btn btn-g btn-sm" onclick="togglePublish('${t.id}')">🚀 Publish</button>`}
+        <button class="btn btn-gh btn-sm" onclick="S.testTab='all';S.activeTest=null;render()">← Back</button>
+      </div>
+    </div>
+
+    ${(t.questions||[]).length>0?`<div class="panel" style="margin-bottom:18px"><h3>Questions in this Test</h3>
+      ${t.questions.map((q,i)=>{
+        const typeLabel={mcq:"🔘 MCQ",tf:"✓✗ True/False",fib:"___ Fill in the Blank",short:"✏️ Short Answer",essay:"📝 Essay"}[q.type]||q.type;
+        let body="";
+        if(q.type==="mcq")body=`<ul style="margin:8px 0 0 18px;font-size:13px">${q.options.map((o,oi)=>`<li style="${oi===q.correct?"color:var(--su);font-weight:600":""}">${escapeHtml(o)}${oi===q.correct?" ✓":""}</li>`).join("")}</ul>`;
+        else if(q.type==="tf")body=`<p style="margin-top:6px;font-size:13px;color:var(--su)">Correct: ${q.correct?"True":"False"} ✓</p>`;
+        else if(q.type==="fib")body=`<p style="margin-top:6px;font-size:13px;color:var(--su)">Accepts: ${q.accepts.map(escapeHtml).join(" / ")}</p>`;
+        else body=`<p style="margin-top:6px;font-size:12px;color:var(--mt);font-style:italic">Manual grading (lecturer reviews after submission)</p>`;
+        return `<div style="background:var(--cr);border:1px solid var(--br);border-radius:8px;padding:14px;margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+            <div style="flex:1"><strong>Q${i+1}.</strong> <span style="font-size:11px;color:var(--mt);margin-left:6px">${typeLabel} · ${q.points} pt${q.points===1?"":"s"}</span>
+              <p style="margin-top:4px">${escapeHtml(q.text)}</p>
+              ${body}
+            </div>
+            <button class="btn btn-d btn-sm" onclick="deleteQuestion('${t.id}','${q.id}')">🗑️</button>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`:""}
+
+    <div class="panel" style="border:1.5px solid var(--p3)">
+      <h3>Add a Question</h3>
+      ${(function(){
+        const curType = document.getElementById("nq-type")?.value || "mcq";
+        return `<div class="g2">
+        <div class="fg"><label>Question Type</label><select id="nq-type" onchange="render()">
+          <option value="mcq" ${curType==="mcq"?"selected":""}>🔘 Multiple Choice (auto-graded)</option>
+          <option value="tf" ${curType==="tf"?"selected":""}>✓✗ True/False (auto-graded)</option>
+          <option value="fib" ${curType==="fib"?"selected":""}>___ Fill in the Blank (auto-graded)</option>
+          <option value="short" ${curType==="short"?"selected":""}>✏️ Short Answer (you grade manually)</option>
+          <option value="essay" ${curType==="essay"?"selected":""}>📝 Essay (you grade manually)</option>
+        </select></div>
+        <div class="fg"><label>Points *</label><input id="nq-points" type="number" min="1" value="1"></div>
+      </div>
+      <div class="fg"><label>Question Text *</label><textarea id="nq-text" rows="2" placeholder="Type your question here..."></textarea></div>
+      ${rQuestionTypeFields("nq", curType)}`;
+      })()}
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:10px 0"><input type="checkbox" id="nq-save-bank"> Also save to Question Bank for reuse</label>
+      ${S.data.qbank.length>0?`<div style="border-top:1px solid var(--br);padding-top:12px;margin-top:12px">
+        <label style="font-size:11.5px;font-weight:600;color:var(--mid);text-transform:uppercase">📚 Or pull from Question Bank</label>
+        <div style="margin-top:8px;max-height:180px;overflow-y:auto;border:1px solid var(--br);border-radius:8px">
+        ${S.data.qbank.filter(bq=>!bq.course||bq.course===t.course).slice(0,20).map(bq=>`<div style="padding:8px 12px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;gap:10px;align-items:center"><span style="font-size:12px;flex:1">${escapeHtml(bq.text.substring(0,80))}${bq.text.length>80?"…":""} <span style="color:var(--mt)">· ${bq.type.toUpperCase()} · ${bq.points}pt</span></span><button class="btn btn-o btn-sm" onclick="pullFromBank('${t.id}','${bq.id}')">+ Add</button></div>`).join("")}
+        </div>
+      </div>`:""}
+      <button class="btn btn-p btn-full" style="margin-top:12px" onclick="addQuestionToTest('${t.id}')">Add Question to Test</button>
+    </div>
+  </div>`;
+}
+
+function rQuestionTypeFields(prefix,type){
+  if(type==="mcq"){
+    return `<div class="fg"><label>Options (provide at least 2, leave extras blank)</label>
+      ${[0,1,2,3].map(i=>`<input id="${prefix}-opt-${i}" placeholder="Option ${"ABCD"[i]}" style="margin-bottom:6px">`).join("")}
+    </div>
+    <div class="fg"><label>Correct Option *</label><select id="${prefix}-correct">
+      ${[0,1,2,3].map(i=>`<option value="${i}">${"ABCD"[i]}</option>`).join("")}
+    </select></div>`;
+  }
+  if(type==="tf"){
+    return `<div class="fg"><label>Correct Answer *</label><select id="${prefix}-tf">
+      <option value="true">True</option><option value="false">False</option>
+    </select></div>`;
+  }
+  if(type==="fib"){
+    return `<div class="fg"><label>Acceptable Answers (separate with |) *</label>
+      <input id="${prefix}-accepts" placeholder="e.g.,  Ibsen | Henrik Ibsen | henrik ibsen">
+      <p style="font-size:11px;color:var(--mt);margin-top:4px">Matching is case-insensitive and ignores extra spaces. Use | to list variants.</p>
+    </div>`;
+  }
+  return `<div style="background:var(--svl);padding:10px;border-radius:6px;font-size:12px;color:var(--mt)">💡 You will grade ${type==="essay"?"essay":"short answer"} submissions manually after students submit.</div>`;
+}
+
+function rQbankPage(){
+  const filtered=S.data.qbank;
+  return `<div>
+    <div class="panel" style="border:1.5px solid var(--p3);margin-bottom:18px">
+      <h3>Add to Question Bank</h3>
+      <p style="font-size:13px;color:var(--mt);margin-bottom:12px">Questions saved here can be reused in any test, this semester or next.</p>
+      ${(function(){
+        const curType = document.getElementById("bq-type")?.value || "mcq";
+        return `<div class="g2">
+        <div class="fg"><label>Question Type</label><select id="bq-type" onchange="render()">
+          <option value="mcq" ${curType==="mcq"?"selected":""}>🔘 Multiple Choice</option>
+          <option value="tf" ${curType==="tf"?"selected":""}>✓✗ True/False</option>
+          <option value="fib" ${curType==="fib"?"selected":""}>___ Fill in the Blank</option>
+          <option value="short" ${curType==="short"?"selected":""}>✏️ Short Answer</option>
+          <option value="essay" ${curType==="essay"?"selected":""}>📝 Essay</option>
+        </select></div>
+        <div class="fg"><label>Course Tag</label><select id="bq-course">${COURSES.map(c=>`<option value="${c.code}">${c.code}</option>`).join("")}</select></div>
+      </div>
+      <div class="g2">
+        <div class="fg"><label>Points</label><input id="bq-points" type="number" min="1" value="1"></div>
+        <div></div>
+      </div>
+      <div class="fg"><label>Question Text *</label><textarea id="bq-text" rows="2"></textarea></div>
+      ${rQuestionTypeFields("bq", curType)}`;
+      })()}
+      <button class="btn btn-p btn-full" style="margin-top:8px" onclick="saveBankQuestion()">Save to Bank</button>
+    </div>
+
+    <h3>Saved Questions (${filtered.length})</h3>
+    ${filtered.length===0?`<div class="empty"><div class="ei">📚</div><h4>Bank is empty</h4><p>Add your first reusable question above.</p></div>`:`
+      <div style="display:grid;gap:10px;margin-top:12px">
+      ${[...filtered].reverse().map(bq=>{
+        const typeLabel={mcq:"🔘 MCQ",tf:"✓✗ T/F",fib:"___ FIB",short:"✏️ Short",essay:"📝 Essay"}[bq.type];
+        return `<div class="panel" style="padding:14px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="flex:1"><p style="margin-bottom:4px"><strong>${escapeHtml(bq.text)}</strong></p><p style="font-size:11.5px;color:var(--mt)">${typeLabel} · ${bq.points}pt · ${bq.course||"Any course"}</p></div><button class="btn btn-d btn-sm" onclick="deleteBankQuestion('${bq.id}')">🗑️</button></div></div>`;
+      }).join("")}
+      </div>
+    `}
+  </div>`;
+}
+
+function rSubmissionsPage(){
+  if(S.gradingSub){return rGradeSubmission();}
+  const allSubs=[...S.data.testSubs].sort((a,b)=>(b.submittedAt||0)-(a.submittedAt||0));
+  if(allSubs.length===0){
+    return `<div class="empty"><div class="ei">✅</div><h4>No submissions yet</h4><p>Once students submit tests they will appear here.</p></div>`;
+  }
+  // Group by test
+  const byTest={};
+  allSubs.forEach(s=>{
+    if(!byTest[s.testId])byTest[s.testId]=[];
+    byTest[s.testId].push(s);
+  });
+  return `<div>${Object.entries(byTest).map(([tid,subs])=>{
+    const test=S.data.tests.find(t=>t.id===tid);
+    const title=test?.title||subs[0].testTitle||"(deleted test)";
+    return `<div class="panel" style="margin-bottom:18px">
+      <h3>${escapeHtml(title)}</h3>
+      <p class="cm" style="margin-bottom:12px">${subs.length} submission${subs.length===1?"":"s"} · ${test?.course||""}</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="text-align:left;border-bottom:2px solid var(--p3)">
+          <th style="padding:8px">Student</th><th style="padding:8px">Matric</th>
+          <th style="padding:8px">Submitted</th><th style="padding:8px">Time</th>
+          <th style="padding:8px">Auto</th><th style="padding:8px">Manual</th>
+          <th style="padding:8px">Total</th><th style="padding:8px">Status</th><th></th>
+        </tr></thead><tbody>
+        ${subs.map(s=>{
+          const submitDate=new Date(s.submittedAt||0).toLocaleString("en-NG",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+          const mins=Math.floor((s.timeUsedSecs||0)/60),secs=(s.timeUsedSecs||0)%60;
+          const statusColor=s.status==="graded"?"var(--su)":"var(--g1)";
+          return `<tr style="border-bottom:1px solid var(--br)">
+            <td style="padding:8px"><strong>${escapeHtml(s.studentName||"")}</strong></td>
+            <td style="padding:8px">${escapeHtml(s.studentMatric||"")}</td>
+            <td style="padding:8px">${submitDate}</td>
+            <td style="padding:8px">${mins}:${secs<10?"0":""}${secs}</td>
+            <td style="padding:8px">${s.autoScore}/${s.maxAuto}</td>
+            <td style="padding:8px">${s.maxManual>0?(s.manualScore||0)+"/"+s.maxManual:"—"}</td>
+            <td style="padding:8px"><strong>${s.totalScore}/${s.maxTotal}</strong></td>
+            <td style="padding:8px;color:${statusColor};font-weight:600;text-transform:uppercase;font-size:11px">${s.status==="graded"?"✓ Graded":"⏳ Pending"}</td>
+            <td style="padding:8px">${s.maxManual>0?`<button class="btn btn-o btn-sm" onclick="S.gradingSub='${s.id}';render()">${s.status==="graded"?"View":"Grade"}</button>`:`<button class="btn btn-gh btn-sm" onclick="S.gradingSub='${s.id}';render()">View</button>`}</td>
+          </tr>`;
+        }).join("")}
+      </tbody></table>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function rGradeSubmission(){
+  const sub=S.data.testSubs.find(s=>s.id===S.gradingSub);
+  if(!sub)return `<div><button class="btn btn-gh btn-sm" onclick="S.gradingSub=null;render()">← Back</button><p>Submission not found.</p></div>`;
+  const test=S.data.tests.find(t=>t.id===sub.testId);
+  if(!test)return `<div><button class="btn btn-gh btn-sm" onclick="S.gradingSub=null;render()">← Back</button><p>Test not found.</p></div>`;
+  return `<div>
+    <button class="btn btn-gh btn-sm" onclick="S.gradingSub=null;render()">← Back to Submissions</button>
+    <div class="panel" style="margin-top:14px">
+      <h3>${escapeHtml(sub.studentName)} — ${escapeHtml(test.title)}</h3>
+      <p class="cm">Matric: ${escapeHtml(sub.studentMatric)} · Submitted: ${new Date(sub.submittedAt).toLocaleString("en-NG")}</p>
+      <p style="margin-top:8px">Auto: <strong>${sub.autoScore}/${sub.maxAuto}</strong> · Manual: <strong>${sub.manualScore||0}/${sub.maxManual}</strong> · Total: <strong style="color:var(--p2);font-size:18px">${sub.totalScore}/${sub.maxTotal}</strong></p>
+    </div>
+    <div style="display:grid;gap:14px;margin-top:14px">
+    ${(test.questions||[]).map((q,i)=>{
+      const ans=sub.answers[q.id];
+      const grade=sub.grades?.[q.id];
+      const manualGrade=sub.manualGrades?.[q.id];
+      const typeLabel={mcq:"🔘 MCQ",tf:"✓✗ T/F",fib:"___ FIB",short:"✏️ Short",essay:"📝 Essay"}[q.type];
+      let ansDisplay="";
+      if(q.type==="mcq"){
+        ansDisplay=ans!==undefined?`<strong>${escapeHtml(q.options[ans]||"(no answer)")}</strong> — Correct: ${escapeHtml(q.options[q.correct])}`:"<em>No answer</em>";
+      } else if(q.type==="tf"){
+        ansDisplay=ans!==undefined?`<strong>${ans?"True":"False"}</strong> — Correct: ${q.correct?"True":"False"}`:"<em>No answer</em>";
+      } else if(q.type==="fib"){
+        ansDisplay=ans?`<strong>${escapeHtml(ans)}</strong> — Accepted: ${q.accepts.map(escapeHtml).join(" / ")}`:"<em>No answer</em>";
+      } else {
+        ansDisplay=ans?`<div style="background:var(--ww);padding:10px;border-radius:6px;border:1px solid var(--br);margin-top:6px;white-space:pre-wrap">${escapeHtml(ans)}</div>`:"<em>No answer</em>";
+      }
+      const autoMark=grade?.autoGraded?(grade.correct?`<span style="color:var(--su);font-weight:600">✓ Correct (+${grade.points})</span>`:`<span style="color:var(--er);font-weight:600">✗ Incorrect (0 pts)</span>`):"";
+      const isManual=q.type==="short"||q.type==="essay";
+      return `<div class="panel">
+        <p><strong>Q${i+1}.</strong> <span style="font-size:11px;color:var(--mt);margin-left:6px">${typeLabel} · ${q.points} pt${q.points===1?"":"s"}</span></p>
+        <p style="margin-top:4px">${escapeHtml(q.text)}</p>
+        <div style="margin-top:8px">${ansDisplay}</div>
+        ${autoMark?`<p style="margin-top:8px">${autoMark}</p>`:""}
+        ${isManual?`<div style="border-top:1px solid var(--br);margin-top:12px;padding-top:12px">
+          <div class="g2">
+            <div class="fg"><label>Points (out of ${q.points})</label><input id="mg-pts-${q.id}" type="number" min="0" max="${q.points}" value="${manualGrade?.points??""}"></div>
+            <div></div>
+          </div>
+          <div class="fg"><label>Feedback for student (optional)</label><textarea id="mg-fb-${q.id}" rows="2">${escapeHtml(manualGrade?.feedback||"")}</textarea></div>
+        </div>`:""}
+      </div>`;
+    }).join("")}
+    </div>
+    ${(test.questions||[]).some(q=>q.type==="short"||q.type==="essay")?`<button class="btn btn-p btn-full" style="margin-top:14px" onclick="saveManualGrade('${sub.id}')">💾 Save Grades & Mark as Graded</button>`:""}
+  </div>`;
+}
+
+function rTestsStudent(){
+  const myUid=S.user.id||fbAuth.currentUser?.uid||"unknown";
+  // Find courses this student is in via ROSTER
+  const myCourses=COURSES.filter(c=>ROSTER.some(r=>r.matric===S.user.matric&&r.course===c.code));
+  const courseCodes=myCourses.length>0?myCourses.map(c=>c.code):COURSES.map(c=>c.code);
+  const myTests=S.data.tests.filter(t=>t.published && courseCodes.includes(t.course));
+  const mySubs=S.data.testSubs.filter(s=>s.studentUid===myUid);
+  if(myTests.length===0){
+    return `<div class="empty"><div class="ei">🧪</div><h4>No tests available</h4><p>Your lecturer hasn't published any tests yet. Check back later.</p></div>`;
+  }
+  const now=Date.now();
+  return `<div style="display:grid;gap:14px">
+  ${myTests.map(t=>{
+    const mySub=mySubs.find(s=>s.testId===t.id);
+    const totalPts=(t.questions||[]).reduce((a,q)=>a+(q.points||0),0);
+    const openAtMs=t.openAt?new Date(t.openAt).getTime():0;
+    const closeAtMs=t.closeAt?new Date(t.closeAt).getTime():0;
+    const notOpenYet=openAtMs && openAtMs>now;
+    const closed=closeAtMs && closeAtMs<now;
+    let status="", action="";
+    if(mySub){
+      const showScore=mySub.status==="graded"||mySub.maxManual===0;
+      status=`<span style="background:var(--su);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:600">✓ SUBMITTED</span>`;
+      action=`<div style="margin-top:10px;padding:12px;background:var(--cr);border-radius:8px"><p style="font-size:14px"><strong>Your score:</strong> ${showScore?mySub.totalScore+"/"+mySub.maxTotal:mySub.autoScore+"/"+mySub.maxAuto+" (auto)"}</p>${mySub.maxManual>0&&mySub.status!=="graded"?`<p style="font-size:12px;color:var(--mt);margin-top:4px">${mySub.maxManual} pts pending manual review by lecturer</p>`:""}</div>`;
+    } else if(notOpenYet){
+      status=`<span style="background:var(--g2);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:600">⏰ NOT YET OPEN</span>`;
+      action=`<p style="font-size:13px;color:var(--mt);margin-top:8px">Opens: ${new Date(t.openAt).toLocaleString("en-NG")}</p>`;
+    } else if(closed){
+      status=`<span style="background:var(--er);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:600">❌ CLOSED</span>`;
+      action=`<p style="font-size:13px;color:var(--mt);margin-top:8px">Closed on ${new Date(t.closeAt).toLocaleString("en-NG")}</p>`;
+    } else {
+      status=`<span style="background:var(--p2);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:600">🔓 AVAILABLE</span>`;
+      action=`<button class="btn btn-p" style="margin-top:10px" onclick="startTakingTest('${t.id}')">Start Test →</button>`;
+    }
+    return `<div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div style="flex:1;min-width:240px">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+            <h3 style="margin:0">${escapeHtml(t.title)}</h3>${status}
+          </div>
+          <p class="cm">📘 ${t.course} · ${(t.questions||[]).length} questions · ${totalPts} pts ${t.duration?"· ⏱️ "+t.duration+" min limit":"· No time limit"}</p>
+          ${t.instructions?`<p style="font-size:13px;color:var(--mt);margin-top:8px">${escapeHtml(t.instructions)}</p>`:""}
+          ${action}
+        </div>
+      </div>
+    </div>`;
+  }).join("")}
+  </div>`;
+}
+
+function rTakeTest(){
+  const t=S.data.tests.find(x=>x.id===S.activeTest);
+  if(!t)return `<div class="empty"><div class="ei">❓</div><h4>Test not found</h4></div>`;
+  return `<div>
+    <div style="position:sticky;top:0;background:var(--ww);border-bottom:1.5px solid var(--p3);padding:14px 0;margin-bottom:20px;z-index:10">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div><h3 style="margin:0;color:var(--p1)">${escapeHtml(t.title)}</h3><p style="font-size:12px;color:var(--mt);margin-top:2px">${t.course} · ${(t.questions||[]).length} questions</p></div>
+        ${t.duration?`<div style="text-align:right"><div style="font-size:11px;color:var(--mt);text-transform:uppercase;letter-spacing:.5px">Time Remaining</div><div id="test-timer" style="font-size:28px;font-weight:700;color:var(--p2);font-family:'Cormorant Garamond',serif">${t.duration}:00</div></div>`:""}
+      </div>
+    </div>
+    ${t.instructions?`<div class="nbox pur" style="margin-bottom:18px"><strong>Instructions:</strong> ${escapeHtml(t.instructions)}</div>`:""}
+    <div style="display:grid;gap:16px">
+    ${(t.questions||[]).map((q,i)=>{
+      let body="";
+      if(q.type==="mcq"){
+        body=q.options.map((o,oi)=>`<label style="display:flex;gap:10px;padding:10px 14px;border:1.5px solid var(--br);border-radius:8px;margin-top:6px;cursor:pointer;background:var(--ww)"><input type="radio" name="ans-${q.id}" value="${oi}" onchange="recordAnswer('${q.id}',${oi})"><span>${escapeHtml(o)}</span></label>`).join("");
+      } else if(q.type==="tf"){
+        body=`<div style="display:flex;gap:10px;margin-top:8px">
+          <label style="flex:1;display:flex;gap:10px;padding:12px;border:1.5px solid var(--br);border-radius:8px;cursor:pointer;background:var(--ww);justify-content:center"><input type="radio" name="ans-${q.id}" value="true" onchange="recordAnswer('${q.id}',true)"><span>True</span></label>
+          <label style="flex:1;display:flex;gap:10px;padding:12px;border:1.5px solid var(--br);border-radius:8px;cursor:pointer;background:var(--ww);justify-content:center"><input type="radio" name="ans-${q.id}" value="false" onchange="recordAnswer('${q.id}',false)"><span>False</span></label>
+        </div>`;
+      } else if(q.type==="fib"){
+        body=`<input id="ans-${q.id}" placeholder="Type your answer here..." oninput="recordAnswer('${q.id}',this.value)" style="margin-top:8px">`;
+      } else if(q.type==="short"){
+        body=`<textarea id="ans-${q.id}" rows="2" placeholder="Type your answer (1-2 sentences)..." oninput="recordAnswer('${q.id}',this.value)" style="margin-top:8px"></textarea>`;
+      } else {
+        body=`<textarea id="ans-${q.id}" rows="6" placeholder="Write your essay answer here..." oninput="recordAnswer('${q.id}',this.value)" style="margin-top:8px"></textarea>`;
+      }
+      return `<div class="panel"><p><strong>Q${i+1}.</strong> <span style="font-size:11px;color:var(--mt);margin-left:6px">${q.points} pt${q.points===1?"":"s"}</span></p><p style="margin-top:4px;font-size:15px">${escapeHtml(q.text)}</p>${body}</div>`;
+    }).join("")}
+    </div>
+    <button class="btn btn-p btn-full" style="margin-top:20px;font-size:16px;padding:14px" onclick="submitTest(false)">📤 Submit Test</button>
+  </div>`;
+}
+
+// ── ANNOUNCEMENTS ────────────────────────────────────────────
+function rAnnounce(){
+  const isLec=S.role==="lecturer";
+  return `<div>
+  ${isLec?`<div class="panel" style="border:1.5px solid var(--p3);margin-bottom:20px"><h3>Post Announcement</h3>
+    <div class="fg"><label>Title *</label><input id="an-t" placeholder="Announcement title"></div>
+    <div class="fg"><label>Message *</label><textarea id="an-b" rows="3" placeholder="Full announcement text..."></textarea></div>
+    <div class="g2">
+      <div class="fg"><label>Course</label><select id="an-c"><option value="All Courses">All Courses</option>${COURSES.map(c=>`<option value="${c.code}">${c.code}</option>`).join("")}<option value="General">General</option></select></div>
+      <div class="fg" style="display:flex;align-items:flex-end;padding-bottom:4px"><label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input id="an-u" type="checkbox" style="width:15px;height:15px"> Mark urgent</label></div>
+    </div>
+    <button class="btn btn-p" onclick="postAnn()">Post</button>
+  </div>`:""}
+  ${S.data.announcements.map(a=>`<div class="ac ${a.urgent?"urgent":""}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px">
+      <h4>${a.urgent?"🚨 ":""}${a.title}</h4>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0"><span class="ctag">${a.course}</span>${isLec?`<button class="btn btn-d btn-sm" onclick="delAnn(${a.id})" style="padding:3px 8px;font-size:11px">✕</button>`:""}</div>
+    </div>
+    <p>${a.body}</p>
+    <div class="amt"><span>📅 ${a.date}</span></div>
+  </div>`).join("")}
+  </div>`;
+}
+
+// ── PROFILE ──────────────────────────────────────────────────
+function rProfile(){
+  const u=S.user;
+  return `<div>
+  ${u?.mustChange?`<div class="nbox" style="margin-bottom:18px">⚠️ You are using a default password (your matric number). Please change it below before continuing.</div>`:""}
+  <div class="g2">
+    <div><div class="pcard">
+      <div class="pcb"></div>
+      <div class="pcbody">
+        <div class="pav">${(u?.name||"U")[0]}</div>
+        <div class="pname">${u?.name||""}</div>
+        <div class="prole">${S.role} · ${CFG.dept}</div>
+        ${[["Email",u?.email||"—"],[S.role==="student"?"Matric No.":"Staff ID",u?.matric||"—"],["Institution",CFG.school],["College",CFG.college],["Session",CFG.session]].map(([k,v])=>`<div class="prow"><span>${k}</span><span>${v}</span></div>`).join("")}
+      </div>
+    </div></div>
+    <div><div class="panel"><h3>Change Password</h3>
+      ${u?.mustChange?`<div class="nbox pur" style="margin-bottom:14px">Change from your default matric-number password to a personal one.</div>`:""}
+      <div class="fg"><label>Current Password</label>
+        <div class="pw-wrap"><input id="cp-old" type="password" placeholder="Current password"></div>
+      </div>
+      <div class="fg"><label>New Password</label>
+        <div class="pw-wrap"><input id="cp-new" type="password" placeholder="Min 6 characters"></div>
+      </div>
+      <div class="fg"><label>Confirm New Password</label>
+        <div class="pw-wrap"><input id="cp-con" type="password" placeholder="Repeat"></div>
+      </div>
+      <label class="pw-check-row" style="margin-top:-10px;margin-bottom:13px"><input type="checkbox" onchange="showPw([\'cp-old\',\'cp-new\',\'cp-con\'],this)"> Show passwords</label>
+      <button class="btn btn-p" onclick="doChangePw()">Update Password</button>
+    </div></div>
+  </div>
+  <div class="panel" style="margin-top:0;max-width:490px"><h3>Enrolled Courses</h3>
+    ${COURSES.map(c=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--br);cursor:pointer" onclick="openC('${c.code}')">
+      <div style="width:34px;height:34px;border-radius:8px;background:${c.bg};display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${c.ic}</div>
+      <div style="flex:1"><div style="font-size:13.5px;font-weight:500">${c.code}</div><div style="font-size:11.5px;color:var(--mt)">${c.title}</div></div>
+      <span class="sts sts-${c.status}">${c.units}U ${c.status}</span>
+    </div>`).join("")}
+  </div></div>`;
+}
+
+// ── HOW TO ───────────────────────────────────────────────────
+function rHowTo(){
+  return `<div>
+  <div class="nbox">⚠️ This portal stores data in each user's own browser. To share it with students on their phones and laptops, follow Stage 2 below. The process is free and takes about 10 minutes.</div>
+  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">📋 Your Lecturer Login</h4>
+    ${[["Email",CFG.email],["Password","Theatre@LASUED26"],["Access level","Full admin — all courses, grading, attendance, announcements"]].map(([k,v])=>`<div class="prow"><span>${k}</span><span><code style="background:var(--cr);padding:2px 7px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--p2)">${v}</code></span></div>`).join("")}
+  </div>
+  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">🌐 Share with Students (Free, 10 min)</h4>
+    ${[["1","Find your downloaded file","Look for <code>LASUED_Theatre_Portal_v4.html</code> in your Downloads folder."],["2","Go to netlify.com/drop","Open your browser and visit <code>netlify.com/drop</code>. No account needed."],["3","Drag the file onto the page","Drag your HTML file onto the Netlify page. It uploads in seconds."],["4","Copy your link","Netlify gives you a free link like <code>amazing-name-123.netlify.app</code>."],["5","Share with students","Send via WhatsApp or write on the board. Students open it on any device."]].map(([n,h,p])=>`<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--br)"><div style="width:28px;height:28px;border-radius:50%;background:var(--p2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px">${n}</div><div><h5 style="font-size:14px;font-weight:600;margin-bottom:3px">${h}</h5><p style="font-size:13px;color:var(--mt);line-height:1.6">${p}</p></div></div>`).join("")}
+  </div>
+  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">📚 Pre-Loaded Student Lists</h4>
+    ${[["THA 125","64 students pre-loaded","251105010001–064","✅"],["THA 222","60 students pre-loaded","231105010001–060","✅"],["THA 302","Pending — upload your list","","⏳"],["THA 326","Pending — upload your list","","⏳"],["THA 404","Pending — upload your list","","⏳"],["THA 422","Pending — upload your list","","⏳"]].map(([c,d,m,s])=>`<div class="prow"><span>${c}</span><span>${s} ${d}${m?" ("+m+")":""}</span></div>`).join("")}
+    <p style="font-size:12.5px;color:var(--mt);margin-top:12px">To add students for THA 302, 326, 402, and 422: paste or upload the lists in your Claude conversation and they will be added in the same format.</p>
+  </div>
+  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">📋 About the Attendance System</h4>
+    <p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:10px"><strong>How it works:</strong> At the start of class, go to the course page → Attendance tab → "Open Session". A unique 6-character code is generated. Show it on your screen or write it on the board. Students who are present enter the code on their devices. Within ${CFG.graceMins} minutes = <strong>Present</strong>; after that = <strong>Late</strong>.</p>
+    <p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:10px"><strong>Anti-proxy protection:</strong> Each student must be logged into their own account. The system records who marked, when, and whether the code was correct. A student cannot mark twice in one session. The code changes every session.</p>
+    <p style="font-size:13px;color:#555;line-height:1.75"><strong>Limitation:</strong> Since data is stored per-device, student self-marks are on their own browser. The lecturer can also manually mark the full register from their device (the "P/L/A" buttons). For fully shared real-time data, request Firebase integration.</p>
+  </div>
+  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">📂 Migrating Previously Generated Materials</h4>
+    <p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:10px">All documents generated in your previous Claude sessions (syllabi, handouts, group briefs, rubrics, etc.) are listed in each course's Materials tab as <em>"Pending upload"</em> items — so you know exactly what to upload and where it belongs.</p>
+    <p style="font-size:13px;color:#555;line-height:1.75"><strong>To upload:</strong> Open the course (e.g. THA 125) → Materials tab → drag your file into the upload zone. The file is saved in your browser. For files over 4 MB, upload them to Google Drive and add the link instead.</p>
+  </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// MAIN RENDER
+// ══════════════════════════════════════════════════════
+
+function rSidebar(){
+  const pg=S.pg; const pend=pendG();
+  return `<div class="sl"><div class="sl-ic">🎭</div><div class="sl-t"><h3>Theatre Arts Portal</h3><span>LASUED ${CFG.session.split("—")[0].trim()}</span></div></div>
+    <div class="sl-lg"><div class="sl-lgt"><img src="${getLogo('UNILOGO')}" alt="LASUED" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div><div class="sl-lgt" style="margin-left:4px"><img src="${getLogo('THALOGO')}" alt="THA" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div><div style="font-size:10px;color:rgba(255,255,255,.35);margin-left:6px;line-height:1.4">${CFG.dept}<br>${CFG.session}</div></div>
+    <nav class="snav">
+      <div class="ns"><div class="nst">Main</div>
+        <div class="ni ${pg==="dashboard"?"on":""}" onclick="nav('dashboard')">🏠 Dashboard</div>
+        <div class="ni ${pg==="courses"?"on":""}" onclick="nav('courses')">📚 All Courses</div>
+        <div class="ni ${pg==="announcements"?"on":""}" onclick="nav('announcements')">📢 Announcements</div>
+      </div>
+      <div class="ns"><div class="nst">Academic</div>
+        <div class="ni ${pg==="forum"?"on":""}" onclick="nav('forum')">💬 Forum</div>
+        <div class="ni ${pg==="assignments"?"on":""}" onclick="nav('assignments')">📝 Assignments</div>
+        <div class="ni ${pg==="tests"?"on":""}" onclick="nav('tests')">🧪 Tests</div>
+        <div class="ni ${pg==="attendance"?"on":""}" onclick="nav('attendance')">📋 Attendance</div>
+        ${S.role==="lecturer"?`<div class="ni ${pg==="grading"?"on":""}" onclick="nav('grading')">✏️ Grading ${pendG()>0?'<span class="bx">'+pendG()+'</span>':""}</div>`:""}
+        <div class="ni ${pg==="results"?"on":""}" onclick="nav('results')">📊 Results</div>
+        ${S.role==="student"?`<div class="ni ${pg==="feedback"?"on":""}" onclick="nav('feedback')">✍️ My Feedback</div>`:""}
+      </div>
+      <div class="ns"><div class="nst">Account</div>
+        <div class="ni ${pg==="profile"?"on":""}" onclick="nav('profile')">👤 Profile</div>
+        ${S.role==="lecturer"?`<div class="ni ${pg==="howto"?"on":""}" onclick="nav('howto')">🚀 Share Portal</div>`:""}
+        <div class="ni" onclick="doLogout()">🚪 Sign Out</div>
+      </div>
+    </nav>
+    <div class="sftr"><div class="uchip"><div class="uav">${(S.user?.name||"U")[0]}</div><div class="uinfo"><h4>${S.user?.name||""}</h4><span>${S.role}</span></div></div></div>`;
+}
+
+function rMain(){
+  const pg=S.pg;
+  const titles={dashboard:"Dashboard",courses:"All Courses",forum:"Forum",assignments:"Assignments",grading:"Grading Portal",results:"Results",announcements:"Announcements",attendance:"Attendance",tests:"Tests",takeTest:"Taking Test",feedback:"My Feedback",profile:"My Profile",howto:"Share Portal",course:S.course||""};
+  return `<div class="topbar"><button class="mb" onclick="togSB()">☰</button><h2>${titles[pg]||""}</h2>${["dashboard","courses"].includes(pg)?`<div class="sbar"><span>🔍</span><input placeholder="Search..." value="${S.search}" oninput="S.search=this.value;render()"></div>`:""}</div>
+    <div class="content">${
+      pg==="dashboard"?rDash():pg==="courses"?rCourses():pg==="course"?rCoursePg():
+      pg==="forum"?rForum():pg==="assignments"?rAssignPg():pg==="attendance"?rAttPage():
+      pg==="tests"?rTests():pg==="takeTest"?rTakeTest():
+      pg==="grading"?rGrading():pg==="results"?rResults():pg==="announcements"?rAnnounce():
+      pg==="feedback"?rMyFeedback():pg==="profile"?rProfile():pg==="howto"?rHowTo():""
+    }</div>`;
+}
+
+
+// ── KIOSK MODE: Mark attendance by name/matric lookup (lecturer's device passed around) ────
+async function kioskMark(courseCode){
+  try {
+    var nameEl = document.getElementById("kiosk-name");
+    var codeEl = document.getElementById("kiosk-code");
+    if(!nameEl || !codeEl){ alert("Form fields missing"); return; }
+    
+    var nameOrMatric = nameEl.value.trim();
+    var enteredCode = codeEl.value.trim().toUpperCase();
+    
+    if(!nameOrMatric){ alert("Please enter the student name or matric number"); nameEl.focus(); return; }
+    if(!enteredCode){ alert("Please enter the session code"); codeEl.focus(); return; }
+    
+    var k = ck(courseCode);
+    var sess = (S.data.attendance[k]||[]).find(function(s){ return s.open; });
+    if(!sess){ alert("No open session found. Open an attendance session first."); return; }
+    if(!isValidCode(sess, enteredCode)){ alert("Invalid or expired code. Check the code displayed by the lecturer."); return; }
+    
+    // Find student by matric OR by name (case insensitive)
+    var nameLower = nameOrMatric.toLowerCase();
+    var student = S.data.users.find(function(u){ 
+      return u.role === "student" && (
+        u.matric === nameOrMatric || 
+        (u.name && u.name.toLowerCase().includes(nameLower)) ||
+        (u.matric && u.matric.toLowerCase() === nameLower)
+      );
+    });
+    // Also check ROSTER if not in S.data.users
+    if(!student){
+      var rEntry = ROSTER.find(function(r){
+        return r.course===courseCode && (r.matric===nameOrMatric || r.name.toLowerCase().includes(nameLower));
+      });
+      if(rEntry) student = {name:rEntry.name, matric:rEntry.matric};
+    }
+    
+    var studentName, studentMatric;
+    if(student){
+      studentName = student.name;
+      studentMatric = student.matric;
+    } else {
+      studentName = nameOrMatric;
+      studentMatric = "";
+    }
+    
+    // Check if already marked
+    var existing = (sess.records||[]).find(function(r){ 
+      return r.student === studentName || (studentMatric && r.matric === studentMatric); 
+    });
+    if(existing && existing.status){ 
+      alert(studentName + " has already marked attendance for this session."); 
+      nameEl.value = ""; codeEl.value = ""; nameEl.focus();
+      return; 
+    }
+    
+    var elapsed = (Date.now() - sess.openedAt) / 1000 / 60;
+    var status = elapsed <= sess.graceMins ? "present" : "late";
+    var mark = {student:studentName, matric:studentMatric, status:status, time:dateNow(), selfMarked:true};
+    
+    // Write to Firestore
+    if(fbReady && fbDB){
+      try{
+        var key = studentMatric || ("k_" + studentName.replace(/\W/g,"_"));
+        await fbDB.collection("att_sessions").doc(attDocId(k, sess.id)).update({["marks."+key]: mark});
+      }catch(fe){ console.warn("Firestore kiosk mark failed:", fe); }
+    }
+    
+    // Update local state
+    S.data.attendance[k] = S.data.attendance[k].map(function(s){
+      if(s.id !== sess.id) return s;
+      var found = false;
+      var recs = (s.records||[]).map(function(r){
+        if(r.student === studentName || (studentMatric && r.matric === studentMatric)){
+          found = true;
+          return Object.assign({}, r, mark);
+        }
+        return r;
+      });
+      if(!found) recs.push(mark);
+      return Object.assign({}, s, {records:recs});
+    });
+    
+    saveAtt(courseCode);
+    
+    nameEl.value = ""; codeEl.value = "";
+    
+    var msg = "✅ " + studentName + " marked " + status.toUpperCase();
+    if(status === "late") msg += " (" + Math.round(elapsed) + " min late)";
+    alert(msg + "\n\nReady for next student. Pass the device.");
+    
+    render();
+    setTimeout(function(){ var n = document.getElementById("kiosk-name"); if(n) n.focus(); }, 100);
+  } catch(err){
+    alert("Error: " + err.message);
+  }
+}
+// ── END KIOSK MODE ──────────────────────────────────────────────────────────
+
+function render(){
+  const app=document.getElementById("app");
+  if(!app){return;}
+  if(S.pg==="login"){app.innerHTML=rLogin();return;}
+  if(S.pg==="register"){app.innerHTML=rRegister();return;}
+  if(S.pg==="forgot"){app.innerHTML=rForgot();return;}
+  // Set portal structure with explicit viewport-relative sizing
+  const vw=window.innerWidth||document.documentElement.clientWidth||1280;
+  const sw=250, mw=vw-sw;
+  app.innerHTML='<div id="PT" style="display:flex;flex-direction:row;width:'+vw+'px;min-height:100vh;position:relative"><div id="SB" style="width:'+sw+'px;min-width:'+sw+'px;max-width:'+sw+'px;min-height:100vh;background:var(--p1);color:#fff;overflow-y:auto;flex-shrink:0"></div><div id="MN" style="width:'+mw+'px;min-height:100vh;overflow-y:auto;overflow-x:hidden;flex:1"></div></div>';
+  const sbEl=document.getElementById("SB");
+  const mnEl=document.getElementById("MN");
+  if(sbEl) sbEl.innerHTML=rSidebar();
+  if(mnEl) mnEl.innerHTML=rMain();
+  // Auto-start attendance code timer if we're displaying an open session
+  if(S.role==="lecturer" && (S.pg==="course"||S.pg==="attendance") && S.course){
+    const k=ck(S.course);
+    const openSess=(S.data.attendance[k]||[]).find(s=>s.open);
+    if(openSess && document.getElementById("live-code")){
+      startCodeTimer(S.course, openSess.id);
+    }
+  }
+}
+window.addEventListener("DOMContentLoaded",()=>{
+// ════════════════════════════════════════════════════════════════════════════
+// FIREBASE AUTH STATE LISTENER (auto-restore session if user is signed in)
+// ════════════════════════════════════════════════════════════════════════════
+if(fbReady && fbAuth){
+  fbAuth.onAuthStateChanged(async function(user){
+    if(user && (S.pg === "login" || !S.user)){
+      try {
+        var doc = await fbDB.collection("users").doc(user.uid).get();
+        if(doc.exists){
+          S.user = doc.data();
+          S.role = S.user.role || "student";
+          S.pg = "dashboard";
+          render();
+          startAnnListener();
+          await loadAttFromFirestore();
+          startAttListeners();
+          await loadTestsFromFirestore();
+          await loadTestSubsFromFirestore();
+          if(S.role==="lecturer")await loadQbankFromFirestore();
+          startTestListeners();
+          console.log("✓ Session restored for", S.user.name);
+        }
+      } catch(err){
+        console.error("Session restore error:",err);
+      }
+    }
+  });
+
+// ════════════════════════════════════════════════════════════════════════════
+// FIRESTORE REAL-TIME LISTENERS (Milestone C: Announcements)
+// ════════════════════════════════════════════════════════════════════════════
+let fbAnnUnsub = null;
+function startAnnListener(){
+  if(!fbReady || !fbDB || !S.user) return;
+  if(fbAnnUnsub){ try{fbAnnUnsub();}catch(e){} fbAnnUnsub = null; }
+  fbAnnUnsub = fbDB.collection("announcements")
+    .orderBy("createdAt","desc")
+    .onSnapshot(function(snapshot){
+      const anns = [];
+      snapshot.forEach(function(doc){
+        anns.push(doc.data());
+      });
+      S.data.announcements = anns;
+      if(S.pg==="dashboard" || S.pg==="announcements"){
+        render();
+      }
+      console.log("✓ Announcements synced:", anns.length);
+    }, function(err){
+      console.error("Ann listener error:", err);
+    });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// FIRESTORE REAL-TIME LISTENERS (Milestone D: Attendance)
+// ════════════════════════════════════════════════════════════════════════════
+let _attListeners = {};
+
+function startAttListeners(){
+  if(!fbReady || !fbDB || !S.user) return;
+  COURSES.forEach(function(course){
+    const k = ck(course.code);
+    if(_attListeners[k]) return; // already listening
+    const unsub = fbDB.collection("att_sessions")
+      .where("courseKey","==",k)
+      .onSnapshot(function(snapshot){
+        if(!S.data.attendance[k]) S.data.attendance[k] = [];
+        snapshot.docChanges().forEach(function(change){
+          const d = change.doc.data();
+          const enrolled = enrolledForCourse(course.code);
+          const records = marksToRecords(d.marks || {}, enrolled);
+          const sess = {id:d.id, date:d.date, topic:d.topic, openedAt:d.openedAt,
+            graceMins:d.graceMins, open:d.open, closedAt:d.closedAt, manual:d.manual||false, records};
+          const idx = S.data.attendance[k].findIndex(s => s.id === d.id);
+          if(change.type === "removed"){
+            if(idx >= 0) S.data.attendance[k].splice(idx, 1);
+          } else {
+            if(idx >= 0) S.data.attendance[k][idx] = sess;
+            else { S.data.attendance[k].unshift(sess); S.data.attendance[k].sort((a,b)=>b.id-a.id); }
+          }
+        });
+        saveAtt(course.code);
+        // Re-render if on attendance-related page
+        const onAttPage = S.pg==="attendance" || (S.pg==="course" && S.tab==="attendance");
+        if(onAttPage) render();
+        console.log("✓ Attendance synced for", k);
+      }, function(err){
+        console.warn("Att listener error for " + k + ":", err);
+      });
+    _attListeners[k] = unsub;
+  });
+}
+
+function stopAllListeners(){
+  if(fbAnnUnsub){ try{fbAnnUnsub();}catch(e){} fbAnnUnsub = null; }
+  Object.values(_attListeners).forEach(function(u){ try{u();}catch(e){} });
+  _attListeners = {};
+  if(fbTestsUnsub){try{fbTestsUnsub();}catch(e){}fbTestsUnsub=null;}
+  if(fbSubsUnsub){try{fbSubsUnsub();}catch(e){}fbSubsUnsub=null;}
+  if(fbQbankUnsub){try{fbQbankUnsub();}catch(e){}fbQbankUnsub=null;}
+}
+
+
+}
+
+loadAll();render();});
+</script>
+</body>
+</html>
