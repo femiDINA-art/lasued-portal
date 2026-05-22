@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -270,7 +271,9 @@ const CFG={
   dept:"Department of Theatre Arts",college:"College of Humanities Education",
   school:"Lagos State University of Education",
   addr1:"Oto/Ijanikin, Lagos",addr2:"Campus: Inaforija-Epe, Lagos",
-  session:"2025/2026 — Second Semester",graceMins:10
+  session:"2025/2026 — Second Semester",graceMins:10,
+  caMax:40, examMax:60,  // Score split: CA out of 40, Exam out of 60 = 100 total
+  portalURL:"https://femidina-art.github.io/lasued-portal"
 };
 
 // ═══════════════════════════════════════════════════════
@@ -362,7 +365,11 @@ const KNOWN=[
 // STATE
 // ═══════════════════════════════════════════════════════
 let S={pg:"login",user:null,role:"",course:null,tab:"overview",regRole:"student",gradeCourse:"THA 125",attCourse:"THA 125",search:"",
-  data:{users:[],threads:{},assignments:{},submissions:{},announcements:[],files:{},attendance:{},feedback:{}}};
+  testCourse:"THA 125",testTab:"all",
+  activeTest:null,activeTestStartedAt:null,activeAnswers:{},
+  gradingSub:null, gradeTab:"assignments",
+  data:{users:[],threads:{},assignments:{},submissions:{},announcements:[],files:{},attendance:{},feedback:{},
+        tests:[],testSubs:[],qbank:[],scores:{}}};
 let openTh=null;
 
 const PX="lp4_";
@@ -417,6 +424,10 @@ function loadAll(){
     S.data.files[k]=ls("files-"+k,[]);
     S.data.attendance[k]=ls("att-"+k,[]);
   });
+  S.data.tests=ls("tests",[]);
+  S.data.testSubs=ls("testSubs",[]);
+  S.data.qbank=ls("qbank",[]);
+  S.data.scores=ls("scores",{});
 }
 
 function saveU(){ss("users",S.data.users)}
@@ -426,6 +437,10 @@ function saveSub(c){ss("submissions-"+ck(c),S.data.submissions[ck(c)])}
 function saveF(c){ss("files-"+ck(c),S.data.files[ck(c)])}
 function saveAtt(c){ss("att-"+ck(c),S.data.attendance[ck(c)])}
 function saveAnn(){ss("announcements",S.data.announcements)}
+function saveTests(){ss("tests",S.data.tests)}
+function saveTestSubs(){ss("testSubs",S.data.testSubs)}
+function saveQbank(){ss("qbank",S.data.qbank)}
+function saveScores(){ss("scores",S.data.scores)}
 
 
 function showPw(ids,cb){
@@ -566,7 +581,16 @@ async function doLogin(){
     S.pg = "dashboard";
     if(S.user.mustChange){S.pg = "profile"; alert("Welcome! Please change your default password now.");}
     render();
-    
+    startAnnListener();
+    loadAttFromFirestore().then(function(){ startAttListeners(); });
+    loadTestsFromFirestore().then(function(){
+      loadTestSubsFromFirestore().then(function(){
+        if(S.role==="lecturer")loadQbankFromFirestore().then(function(){startTestListeners();});
+        else startTestListeners();
+      });
+    });
+    loadScoresFromFirestore().then(function(){startScoresListener();});
+
   } catch(err) {
     alert("Unexpected sign-in error: " + err.message);
     console.error(err);
@@ -646,6 +670,15 @@ async function doRegister(){
     S.role = role;
     S.pg = "dashboard";
     render();
+    startAnnListener();
+    loadAttFromFirestore().then(function(){ startAttListeners(); });
+    loadTestsFromFirestore().then(function(){
+      loadTestSubsFromFirestore().then(function(){
+        if(S.role==="lecturer")loadQbankFromFirestore().then(function(){startTestListeners();});
+        else startTestListeners();
+      });
+    });
+    loadScoresFromFirestore().then(function(){startScoresListener();});
     alert("✅ Welcome, " + name + "!\n\nYour account is created in the cloud. You can now sign in from any device with the same email and password.");
     
   } catch(err) {
@@ -680,6 +713,7 @@ function doChangePw(){
   ["cp-old","cp-new","cp-con"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
 }
 async function doLogout(){
+  stopAllListeners();
   try {
     if(fbReady && fbAuth){
       await fbAuth.signOut();
@@ -796,52 +830,147 @@ function uploadLogo_disabled(slot){
 }
 
 // ── ANNOUNCEMENTS ───────────────────────────────────────────
-function postAnn(){
+async function postAnn(){
   if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
-  const t=document.getElementById("an-t").value.trim();const b=document.getElementById("an-b").value.trim();
-  const c=document.getElementById("an-c").value;const u=document.getElementById("an-u").checked;
+  if(!fbReady){notify("Cloud not connected","err");return;}
+  const t=document.getElementById("an-t").value.trim();
+  const b=document.getElementById("an-b").value.trim();
+  const c=document.getElementById("an-c").value;
+  const u=document.getElementById("an-u").checked;
   if(!t||!b){notify("Title and body required","err");return;}
-  S.data.announcements.unshift({id:Date.now(),title:t,body:b,course:c,urgent:u,date:new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})});
-  saveAnn();render();notify("Announcement posted.");
+  
+  const ann={
+    id: Date.now().toString(),
+    title: t,
+    body: b,
+    course: c,
+    urgent: u,
+    date: new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"}),
+    createdAt: Date.now(),
+    by: S.user.name||"Lecturer"
+  };
+  
+  try{
+    await fbDB.collection("announcements").doc(ann.id).set(ann);
+    document.getElementById("an-t").value="";
+    document.getElementById("an-b").value="";
+    notify("Announcement posted to cloud","ok");
+    // The realtime listener will update S.data.announcements and re-render
+  }catch(err){
+    notify("Error posting: "+err.message,"err");
+    console.error(err);
+  }
 }
-function delAnn(id){
-  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}if(!confirm("Delete this announcement?"))return;S.data.announcements=S.data.announcements.filter(a=>a.id!==id);saveAnn();render();}
+async function delAnn(id){
+  if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
+  if(!fbReady){notify("Cloud not connected","err");return;}
+  if(!confirm("Delete this announcement?"))return;
+  try{
+    await fbDB.collection("announcements").doc(String(id)).delete();
+    notify("Announcement deleted","ok");
+    // Realtime listener will update view
+  }catch(err){
+    notify("Error deleting: "+err.message,"err");
+    console.error(err);
+  }
+}
 
 // ══════════════════════════════════════════════════════
-// ATTENDANCE SYSTEM
+// ══════════════════════════════════════════════════════
+// ATTENDANCE SYSTEM — Milestone D: Live Firebase Sync
 // ══════════════════════════════════════════════════════
 
-function genCode(){const ch="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let c="";for(let i=0;i<6;i++)c+=ch[Math.floor(Math.random()*ch.length)];return c;}
-function getActiveCode(sess){
-  if(!sess||!sess.open)return null;
-  const rotMs=2*60*1000; // rotate every 2 min
-  const slot=Math.floor((Date.now()-sess.openedAt)/rotMs);
-  if(!sess.codes)sess.codes={};
-  if(!sess.codes[slot])sess.codes[slot]=genCode();
-  return sess.codes[slot];
+// ── Deterministic rolling-code generator (no storage needed) ──
+// Both lecturer device and student devices compute the same code
+// independently from the session's openedAt timestamp.
+function computeAttCode(openedAt, slot) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s = ((openedAt & 0x7FFFFFFF) * 31 + slot * 999983) & 0x7FFFFFFF;
+  if (s === 0) s = 12345;
+  for (let i = 0; i < 6; i++) { s = (s * 1664525 + 1013904223) & 0x7FFFFFFF; }
+  let c = ""; let tmp = s;
+  for (let i = 0; i < 6; i++) { tmp = (tmp * 1664525 + 1013904223) & 0x7FFFFFFF; c += chars[tmp % chars.length]; }
+  return c;
 }
-function isValidCode(sess,entered){
-  if(!sess||!sess.open||!entered)return false;
-  const rotMs=2*60*1000;const slot=Math.floor((Date.now()-sess.openedAt)/rotMs);
-  if(!sess.codes)return entered===sess.code;
-  // Accept current and previous slot (grace)
-  return(sess.codes[slot]&&sess.codes[slot]===entered)||(slot>0&&sess.codes[slot-1]&&sess.codes[slot-1]===entered);
+function getAttSlot(openedAt) { return Math.floor((Date.now() - openedAt) / (2 * 60 * 1000)); }
+function getActiveCode(sess) {
+  if (!sess || !sess.open) return null;
+  return computeAttCode(sess.openedAt, getAttSlot(sess.openedAt));
 }
-function secToNextRotate(sess){const rotMs=2*60*1000;const elapsed=(Date.now()-sess.openedAt)%rotMs;return Math.ceil((rotMs-elapsed)/1000);}
-function startCodeTimer(code,sid){
+function isValidCode(sess, entered) {
+  if (!sess || !sess.open || !entered) return false;
+  const slot = getAttSlot(sess.openedAt);
+  return entered === computeAttCode(sess.openedAt, slot) ||
+         (slot > 0 && entered === computeAttCode(sess.openedAt, slot - 1));
+}
+function secToNextRotate(sess) {
+  const rotMs = 2 * 60 * 1000;
+  const elapsed = (Date.now() - sess.openedAt) % rotMs;
+  return Math.ceil((rotMs - elapsed) / 1000);
+}
+function startCodeTimer(code, sid) {
   clearInterval(window._codeTimer);
-  window._codeTimer=setInterval(()=>{
-    const k=ck(code);const sess=(S.data.attendance[k]||[]).find(s=>s.id===sid);
-    if(!sess||!sess.open){clearInterval(window._codeTimer);return;}
-    const cur=getActiveCode(sess);
-    saveAtt(code);
-    const el=document.getElementById("live-code");const tel=document.getElementById("code-timer");
-    if(el)el.textContent=cur||sess.code;
-    if(tel){const r=secToNextRotate(sess);tel.textContent="Changes in: "+Math.floor(r/60)+":"+(r%60<10?"0":"")+r%60;}
-  },1000);
+  window._codeTimer = setInterval(() => {
+    const k = ck(code);
+    const sess = (S.data.attendance[k] || []).find(s => s.id === sid);
+    if (!sess || !sess.open) { clearInterval(window._codeTimer); return; }
+    const cur = getActiveCode(sess);
+    const el = document.getElementById("live-code");
+    const tel = document.getElementById("code-timer");
+    if (el) el.textContent = cur || "------";
+    if (tel) { const r = secToNextRotate(sess); tel.textContent = "Changes in: " + Math.floor(r/60) + ":" + (r%60<10?"0":"") + r%60; }
+  }, 1000);
 }
 
-function saveManualSession(code){
+// ── Firebase Attendance Helpers ──────────────────────
+function attDocId(k, id) { return "att_" + k + "_" + id; }
+
+// Convert Firestore marks map {matric: markObj} → records array
+function marksToRecords(marks, enrolled) {
+  const result = [];
+  const seen = new Set();
+  enrolled.forEach(e => {
+    const m = (marks || {})[e.matric];
+    result.push(m ? {...m} : {student: e.student, matric: e.matric, status: null, time: null, selfMarked: false});
+    seen.add(e.matric);
+  });
+  Object.entries(marks || {}).forEach(([mk, m]) => {
+    const mat = m.matric || mk;
+    if (!seen.has(mat)) { result.push({...m}); seen.add(mat); }
+  });
+  return result;
+}
+
+function enrolledForCourse(code) {
+  return ROSTER.filter(r => r.course === code).map(r => ({student: r.name, matric: r.matric}));
+}
+
+async function loadAttFromFirestore() {
+  if (!fbReady || !fbDB) return;
+  try {
+    const snap = await fbDB.collection("att_sessions").get();
+    snap.forEach(doc => {
+      const d = doc.data();
+      const k = d.courseKey; if (!k) return;
+      if (!S.data.attendance[k]) S.data.attendance[k] = [];
+      const course = COURSES.find(c => ck(c.code) === k);
+      const enrolled = course ? enrolledForCourse(course.code) : [];
+      const records = marksToRecords(d.marks || {}, enrolled);
+      const idx = S.data.attendance[k].findIndex(s => s.id === d.id);
+      const sess = {id:d.id, date:d.date, topic:d.topic, openedAt:d.openedAt,
+        graceMins:d.graceMins, open:d.open, closedAt:d.closedAt, manual:d.manual||false, records};
+      if (idx >= 0) S.data.attendance[k][idx] = sess;
+      else S.data.attendance[k].push(sess);
+    });
+    COURSES.forEach(c => {
+      const k = ck(c.code);
+      if (S.data.attendance[k]) S.data.attendance[k].sort((a,b) => b.id - a.id);
+    });
+    console.log("✓ Attendance loaded from Firestore");
+  } catch(e) { console.warn("loadAttFromFirestore error:", e); }
+}
+
+async function saveManualSession(code){
   if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
   const date=document.getElementById("ms-date")?.value.trim();
   const topic=document.getElementById("ms-topic")?.value.trim();
@@ -851,7 +980,16 @@ function saveManualSession(code){
     const sel=document.getElementById("ms-"+String(u.matric));
     return{student:u.name,matric:String(u.matric),status:sel?sel.value:"absent",time:date,selfMarked:false};
   });
-  S.data.attendance[k].push({id:Date.now(),date,topic,code:"MANUAL",openedAt:Date.now()-86400000,graceMins:10,open:false,closedAt:Date.now()-86400000,records,manual:true});
+  const sessId=Date.now();
+  const sess={id:sessId,courseKey:k,date,topic,openedAt:sessId-86400000,graceMins:10,open:false,closedAt:sessId-86400000,manual:true};
+  // Build marks map from records
+  const marks={};records.forEach(r=>{marks[r.matric]={...r};});
+  if(fbReady&&fbDB){
+    try{ await fbDB.collection("att_sessions").doc(attDocId(k,sessId)).set({...sess,marks}); }
+    catch(e){console.warn("Firestore saveManual failed:",e);}
+  }
+  if(!S.data.attendance[k])S.data.attendance[k]=[];
+  S.data.attendance[k].unshift({...sess,records});
   saveAtt(code);S.tab="attendance";render();notify("Past session saved ("+records.length+" students).");
 }
 
@@ -922,79 +1060,150 @@ function genWordReport(code){
   });
   const blob=new Blob([txt],{type:"application/msword"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=c.code.replace(" ","_")+"_Attendance_Report.doc";a.click();notify("Word report downloaded.");
 }
-function openAttSession(code){
+async function openAttSession(code){
   if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
   const topic=document.getElementById("att-topic").value.trim();
   const grace=parseInt(document.getElementById("att-grace").value)||10;
   const k=ck(code);
   // Close any previously open session first
-  S.data.attendance[k]=S.data.attendance[k].map(s=>s.open?{...s,open:false,closedAt:Date.now()}:s);
-  // Create new session with enrolled students pre-listed as Unmarked
+  const prevOpen=(S.data.attendance[k]||[]).find(s=>s.open);
+  if(prevOpen)await closeAttSession(code,prevOpen.id);
   const enrolled=S.data.users.filter(u=>u.role==="student"&&ROSTER.find(r=>r.matric===u.matric&&r.course===code));
-  // For courses with no ROSTER data, use general students or empty
   const records=enrolled.length>0?enrolled.map(u=>({student:u.name,matric:u.matric,status:null,time:null,selfMarked:false})):[];
-  const sess={id:Date.now(),date:new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"}),
-    topic:topic||"Class Session",code:genCode(),openedAt:Date.now(),graceMins:grace,open:true,closedAt:null,records};
-  S.data.attendance[k].unshift(sess);
-  saveAtt(code);render();startCodeTimer(code,sess.id);notify("Session opened! Show the rolling code to your class.");
+  const sessId=Date.now();
+  const sess={id:sessId,courseKey:k,
+    date:new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"}),
+    topic:topic||"Class Session",openedAt:sessId,graceMins:grace,open:true,closedAt:null,manual:false};
+  if(fbReady&&fbDB){
+    try{
+      await fbDB.collection("att_sessions").doc(attDocId(k,sessId)).set({...sess,marks:{}});
+      console.log("✓ Session opened in Firestore:", attDocId(k,sessId));
+    }catch(e){console.warn("Firestore openAtt failed:",e);}
+  }
+  if(!S.data.attendance[k])S.data.attendance[k]=[];
+  S.data.attendance[k].unshift({...sess,records});
+  saveAtt(code);
+  window._activeAttCourse=code;window._activeAttSessId=sessId;
+  render();startCodeTimer(code,sessId);
+  notify("Session opened! Show the rolling code to your class.");
 }
 
-function closeAttSession(code,sid){
+async function closeAttSession(code,sid){
   if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
   const k=ck(code);
-  S.data.attendance[k]=S.data.attendance[k].map(s=>s.id===sid?{...s,open:false,closedAt:Date.now()}:s);
-  saveAtt(code);render();notify("Session closed. Attendance saved.");
+  if(fbReady&&fbDB){
+    try{await fbDB.collection("att_sessions").doc(attDocId(k,sid)).update({open:false,closedAt:Date.now()});}
+    catch(e){console.warn("Firestore closeAtt failed:",e);}
+  }
+  S.data.attendance[k]=(S.data.attendance[k]||[]).map(s=>s.id===sid?{...s,open:false,closedAt:Date.now()}:s);
+  saveAtt(code);clearInterval(window._codeTimer);render();notify("Session closed. Attendance saved.");
 }
 
-function markStudent(code,sid,student,status){
+async function markStudent(code,sid,student,status){
   if(S.role!=="lecturer"){notify("Access denied — lecturer only.","err");return;}
   const k=ck(code);
-  S.data.attendance[k]=S.data.attendance[k].map(s=>{
+  const stuData=S.data.users.find(u=>u.name===student)||ROSTER.find(r=>r.name===student&&r.course===code);
+  const matric=stuData?.matric||"";
+  const mark={student,matric,status,time:dateNow(),selfMarked:false};
+  if(fbReady&&fbDB){
+    try{
+      const key=matric||("m_"+student.replace(/\W/g,"_"));
+      await fbDB.collection("att_sessions").doc(attDocId(k,sid)).update({[`marks.${key}`]:mark});
+    }catch(e){console.warn("Firestore markStudent failed:",e);}
+  }
+  S.data.attendance[k]=(S.data.attendance[k]||[]).map(s=>{
     if(s.id!==sid)return s;
-    const recs=s.records.map(r=>r.student===student?{...r,status,time:dateNow()}:r);
-    // If student not in list, add them
-    if(!s.records.find(r=>r.student===student)){
-      recs.push({student,matric:S.data.users.find(u=>u.name===student)?.matric||"",status,time:dateNow(),selfMarked:false});
-    }
+    const recs=(s.records||[]).map(r=>r.student===student?{...r,...mark}:r);
+    if(!s.records.find(r=>r.student===student))recs.push(mark);
     return{...s,records:recs};
   });
   saveAtt(code);render();
 }
 
-function addAbsentees(code,sid){
-  // Mark all still-null as absent
+async function addAbsentees(code,sid){
   const k=ck(code);
-  S.data.attendance[k]=S.data.attendance[k].map(s=>{
+  const absTime=dateNow();
+  if(fbReady&&fbDB){
+    try{
+      const doc=await fbDB.collection("att_sessions").doc(attDocId(k,sid)).get();
+      if(doc.exists){
+        const marks=doc.data().marks||{};
+        const course=COURSES.find(c=>ck(c.code)===k);
+        const enrolled=course?enrolledForCourse(course.code):[];
+        const updates={};
+        enrolled.forEach(e=>{
+          if(!marks[e.matric]||!marks[e.matric].status){
+            updates[`marks.${e.matric}`]={student:e.student,matric:e.matric,status:"absent",time:absTime,selfMarked:false};
+          }
+        });
+        if(Object.keys(updates).length>0)await fbDB.collection("att_sessions").doc(attDocId(k,sid)).update(updates);
+      }
+    }catch(e){console.warn("Firestore addAbsentees failed:",e);}
+  }
+  S.data.attendance[k]=(S.data.attendance[k]||[]).map(s=>{
     if(s.id!==sid)return s;
-    return{...s,records:s.records.map(r=>r.status===null?{...r,status:"absent",time:dateNow()}:r)};
+    return{...s,records:(s.records||[]).map(r=>r.status===null?{...r,status:"absent",time:absTime}:r)};
   });
   saveAtt(code);render();notify("All unmarked students marked Absent.");
 }
 
-// STUDENT: enter session code to self-mark
-function studentMarkAtt(code){
+// STUDENT: enter session code to self-mark (syncs to Firestore)
+async function studentMarkAtt(code){
   const entered=(document.getElementById("att-code-in")||{}).value?.trim().toUpperCase();
   if(!entered){notify("Please enter the session code","err");return;}
   const k=ck(code);
-  const sess=S.data.attendance[k].find(s=>s.open&&s.code===entered);
-  if(!sess){notify("Invalid or expired code. Check the code shown by your lecturer.","err");return;}
+  // Fetch the open session from Firestore for freshest openedAt data
+  let firestoreSess=null;
+  if(fbReady&&fbDB){
+    try{
+      const snap=await fbDB.collection("att_sessions")
+        .where("courseKey","==",k).where("open","==",true).limit(1).get();
+      if(!snap.empty)firestoreSess={...snap.docs[0].data(),_docId:snap.docs[0].id};
+    }catch(e){console.warn("Firestore fetch for student mark failed:",e);}
+  }
+  const sess=firestoreSess||(S.data.attendance[k]||[]).find(s=>s.open);
+  if(!sess){notify("No open session for this course. Ask your lecturer to open attendance.","err");return;}
+  if(!isValidCode(sess,entered)){notify("Invalid or expired code. Check the code shown by your lecturer.","err");return;}
   // Check already marked
-  const existing=sess.records.find(r=>r.student===S.user.name);
-  if(existing&&existing.status){notify("You have already marked your attendance for this session.","err");return;}
-  // Determine Present or Late
+  const myMatric=S.user?.matric||"";
+  if(firestoreSess&&myMatric&&firestoreSess.marks&&firestoreSess.marks[myMatric]?.status){
+    notify("You have already marked your attendance for this session.","err");return;
+  }
+  const localSess=(S.data.attendance[k]||[]).find(s=>s.id===sess.id);
+  if(localSess){
+    const existing=localSess.records.find(r=>r.matric===myMatric||r.student===S.user?.name);
+    if(existing&&existing.status){notify("You have already marked your attendance for this session.","err");return;}
+  }
   const elapsed=(Date.now()-sess.openedAt)/1000/60;
   const status=elapsed<=sess.graceMins?"present":"late";
-  // Mark
-  S.data.attendance[k]=S.data.attendance[k].map(s=>{
-    if(s.id!==sess.id)return s;
-    let found=false;
-    const recs=s.records.map(r=>{
-      if(r.student===S.user.name){found=true;return{...r,status,time:dateNow(),selfMarked:true};}
-      return r;
-    });
-    if(!found)recs.push({student:S.user.name,matric:S.user.matric||"",status,time:dateNow(),selfMarked:true});
-    return{...s,records:recs};
-  });
+  const mark={student:S.user.name,matric:myMatric,status,time:dateNow(),selfMarked:true};
+  // Write to Firestore
+  if(fbReady&&fbDB){
+    try{
+      const docId=firestoreSess?._docId||attDocId(k,sess.id);
+      const key=myMatric||("u_"+fbAuth.currentUser?.uid);
+      await fbDB.collection("att_sessions").doc(docId).update({[`marks.${key}`]:mark});
+      console.log("✓ Student attendance written to Firestore");
+    }catch(e){
+      notify("Connection error — could not save. Please try again.","err");
+      console.error("Firestore student mark failed:",e);return;
+    }
+  }
+  // Update local state
+  if(!S.data.attendance[k])S.data.attendance[k]=[];
+  const idx=S.data.attendance[k].findIndex(s=>s.id===sess.id);
+  if(idx>=0){
+    S.data.attendance[k][idx]={...S.data.attendance[k][idx],
+      records:S.data.attendance[k][idx].records.map(r=>
+        (r.matric===myMatric||r.student===S.user.name)?{...r,...mark}:r)};
+    if(!S.data.attendance[k][idx].records.find(r=>r.matric===myMatric))
+      S.data.attendance[k][idx].records.push(mark);
+  } else {
+    const enrolled=enrolledForCourse(code);
+    S.data.attendance[k].unshift({id:sess.id,date:sess.date,topic:sess.topic,
+      openedAt:sess.openedAt,graceMins:sess.graceMins,open:true,closedAt:null,manual:false,
+      records:[...enrolled.map(e=>e.matric===myMatric?{...e,...mark}:{...e,status:null,time:null,selfMarked:false})]});
+  }
   saveAtt(code);render();
   if(status==="present")notify("✅ Attendance marked — PRESENT. You are on time.");
   else notify("🕐 Attendance marked — LATE. ("+Math.round(elapsed)+" min after session opened)","info");
@@ -1008,6 +1217,481 @@ function getMyAttSummary(code){
     return{date:s.date,topic:s.topic,status:r?.status||"absent",time:r?.time||"—"};
   });
 }
+
+// ══════════════════════════════════════════════════════
+// TESTS SYSTEM — Milestone E
+// ══════════════════════════════════════════════════════
+
+// ── Auto-Grading Engine ────────────────────────────────
+function normalizeAnswer(s){
+  if(s===null||s===undefined)return "";
+  let str = String(s);
+  // Strip diacritics (é→e, ṣ→s, ò→o, ñ→n, etc.)
+  // Normalize to NFD and remove combining marks; then handle special non-decomposable chars
+  str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  // Handle Yoruba-specific marks that NFD may not strip in some browsers
+  str = str.replace(/[ṣṢ]/g,"s").replace(/[ọỌ]/g,"o").replace(/[ẹẸ]/g,"e");
+  // Lowercase, trim, collapse whitespace
+  str = str.toLowerCase().trim().replace(/\s+/g," ");
+  // Strip common punctuation at edges and inside (keep alphanumerics and spaces only)
+  str = str.replace(/[.,;:!?"'`’‘"”\-_()[\]{}]/g," ").replace(/\s+/g," ").trim();
+  return str;
+}
+function gradeQuestion(q, answer){
+  // Returns: {points, autoGraded, correct}
+  if(q.type==="mcq"){
+    const isC = (answer!==undefined && answer!==null && parseInt(answer)===parseInt(q.correct));
+    return {points: isC?q.points:0, autoGraded:true, correct:isC};
+  }
+  if(q.type==="tf"){
+    const isC = (answer===q.correct || String(answer)===String(q.correct));
+    return {points: isC?q.points:0, autoGraded:true, correct:isC};
+  }
+  if(q.type==="fib"){
+    const norm = normalizeAnswer(answer);
+    if(!norm) return {points:0, autoGraded:true, correct:false};
+    const accepts = (q.accepts||[]).map(normalizeAnswer);
+    const isC = accepts.includes(norm);
+    return {points: isC?q.points:0, autoGraded:true, correct:isC};
+  }
+  // short or essay — manual grade
+  return {points:0, autoGraded:false, correct:null};
+}
+
+function gradeSubmission(test, answers){
+  let auto=0, maxAuto=0, manual=0, maxManual=0;
+  const grades={};
+  (test.questions||[]).forEach(q=>{
+    const g=gradeQuestion(q, answers[q.id]);
+    grades[q.id]=g;
+    if(g.autoGraded){ auto+=g.points; maxAuto+=q.points; }
+    else { maxManual+=q.points; }
+  });
+  return {autoScore:auto, maxAuto, manualScore:0, maxManual, totalScore:auto, maxTotal:maxAuto+maxManual, grades};
+}
+
+// ── Firestore: Tests CRUD ──────────────────────────────
+async function fbSaveTest(test){
+  if(!fbReady||!fbDB) return;
+  try{ await fbDB.collection("tests").doc(test.id).set(test); }
+  catch(e){ console.error("fbSaveTest failed:",e); notify("Cloud save failed: "+e.message,"err"); }
+}
+async function fbDeleteTest(testId){
+  if(!fbReady||!fbDB) return;
+  try{ await fbDB.collection("tests").doc(testId).delete(); }
+  catch(e){ console.error("fbDeleteTest failed:",e); }
+}
+async function loadTestsFromFirestore(){
+  if(!fbReady||!fbDB) return;
+  try{
+    const snap = await fbDB.collection("tests").get();
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.tests = list;
+    saveTests();
+    console.log("✓ Tests loaded from Firestore:",list.length);
+  }catch(e){ console.warn("loadTestsFromFirestore:",e); }
+}
+async function loadTestSubsFromFirestore(){
+  if(!fbReady||!fbDB||!S.user) return;
+  try{
+    let q = fbDB.collection("test_submissions");
+    if(S.role==="student") q = q.where("studentUid","==",S.user.id||fbAuth.currentUser?.uid);
+    const snap = await q.get();
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.testSubs = list;
+    saveTestSubs();
+    console.log("✓ Test submissions loaded:",list.length);
+  }catch(e){ console.warn("loadTestSubsFromFirestore:",e); }
+}
+async function loadQbankFromFirestore(){
+  if(!fbReady||!fbDB) return;
+  try{
+    const snap = await fbDB.collection("question_bank").get();
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.qbank = list;
+    saveQbank();
+  }catch(e){ console.warn("loadQbankFromFirestore:",e); }
+}
+
+// ── Real-time listeners ────────────────────────────────
+let fbTestsUnsub=null, fbSubsUnsub=null, fbQbankUnsub=null;
+function startTestListeners(){
+  if(!fbReady||!fbDB||!S.user) return;
+  if(fbTestsUnsub){try{fbTestsUnsub();}catch(e){}}
+  fbTestsUnsub = fbDB.collection("tests").onSnapshot(snap=>{
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.tests = list; saveTests();
+    if(S.pg==="tests") render();
+  }, err=>console.warn("Tests listener:",err));
+
+  if(fbSubsUnsub){try{fbSubsUnsub();}catch(e){}}
+  let subQ = fbDB.collection("test_submissions");
+  if(S.role==="student") subQ = subQ.where("studentUid","==",S.user.id||fbAuth.currentUser?.uid);
+  fbSubsUnsub = subQ.onSnapshot(snap=>{
+    const list=[]; snap.forEach(d=>list.push(d.data()));
+    S.data.testSubs = list; saveTestSubs();
+    if(S.pg==="tests") render();
+  }, err=>console.warn("Subs listener:",err));
+
+  if(S.role==="lecturer"){
+    if(fbQbankUnsub){try{fbQbankUnsub();}catch(e){}}
+    fbQbankUnsub = fbDB.collection("question_bank").onSnapshot(snap=>{
+      const list=[]; snap.forEach(d=>list.push(d.data()));
+      S.data.qbank = list; saveQbank();
+      if(S.pg==="tests"&&S.testTab==="bank") render();
+    }, err=>console.warn("Qbank listener:",err));
+  }
+}
+
+// ── Test creation/management (lecturer) ────────────────
+async function createTest(){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const title=document.getElementById("nt-title").value.trim();
+  const course=document.getElementById("nt-course").value;
+  const instructions=document.getElementById("nt-instr").value.trim();
+  const duration=parseInt(document.getElementById("nt-dur").value)||0;
+  const openAt=document.getElementById("nt-open").value;
+  const closeAt=document.getElementById("nt-close").value;
+  if(!title){notify("Title required","err");return;}
+  if(!course){notify("Select a course","err");return;}
+  const test={
+    id:"test_"+Date.now(), title, course, courseKey:ck(course),
+    instructions, duration, openAt, closeAt,
+    questions:[],
+    createdAt:Date.now(), createdBy:S.user.name||"Lecturer",
+    published:false
+  };
+  S.data.tests.push(test);
+  saveTests();
+  await fbSaveTest(test);
+  S.activeTest=test.id;
+  S.testTab="edit";
+  notify("Test created. Now add questions.");
+  render();
+}
+
+async function deleteTest(testId){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  if(!confirm("Delete this test? This cannot be undone."))return;
+  S.data.tests=S.data.tests.filter(t=>t.id!==testId);
+  saveTests();
+  await fbDeleteTest(testId);
+  notify("Test deleted.");
+  render();
+}
+
+async function togglePublish(testId){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  if(!t.questions||t.questions.length===0){notify("Add at least one question first","err");return;}
+  t.published=!t.published;
+  saveTests();
+  await fbSaveTest(t);
+  notify(t.published?"Test published — students can now take it.":"Test unpublished.");
+  render();
+}
+
+async function addQuestionToTest(testId){
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  const type=document.getElementById("nq-type").value;
+  const text=document.getElementById("nq-text").value.trim();
+  const points=parseInt(document.getElementById("nq-points").value)||1;
+  if(!text){notify("Question text required","err");return;}
+  const q={id:"q_"+Date.now()+"_"+Math.floor(Math.random()*1000),type,text,points};
+  if(type==="mcq"){
+    const opts=[0,1,2,3].map(i=>document.getElementById("nq-opt-"+i).value.trim()).filter(o=>o);
+    if(opts.length<2){notify("Provide at least 2 options","err");return;}
+    const correct=parseInt(document.getElementById("nq-correct").value);
+    if(isNaN(correct)||correct>=opts.length){notify("Select correct option","err");return;}
+    q.options=opts; q.correct=correct;
+  }
+  if(type==="tf"){
+    q.correct=document.getElementById("nq-tf").value==="true";
+  }
+  if(type==="fib"){
+    const accepts=document.getElementById("nq-accepts").value.split("|").map(s=>s.trim()).filter(s=>s);
+    if(accepts.length===0){notify("Provide at least one acceptable answer","err");return;}
+    q.accepts=accepts;
+  }
+  // short and essay need no extra config
+  t.questions.push(q);
+  saveTests();
+  await fbSaveTest(t);
+  // Optionally save to bank
+  if(document.getElementById("nq-save-bank")?.checked){
+    addToQbank({...q,course:t.course});
+  }
+  notify("Question added.");
+  render();
+}
+
+async function deleteQuestion(testId,qId){
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  t.questions=t.questions.filter(q=>q.id!==qId);
+  saveTests();
+  await fbSaveTest(t);
+  render();
+}
+
+async function pullFromBank(testId,qId){
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  const bq=S.data.qbank.find(q=>q.id===qId);if(!bq)return;
+  const newQ={...bq,id:"q_"+Date.now()+"_"+Math.floor(Math.random()*1000)};
+  delete newQ.tags; delete newQ.savedAt;
+  t.questions.push(newQ);
+  saveTests();
+  await fbSaveTest(t);
+  notify("Question added from bank.");
+  render();
+}
+
+// ── Question Bank ──────────────────────────────────────
+async function addToQbank(q){
+  const bq={...q,id:"bq_"+Date.now()+"_"+Math.floor(Math.random()*1000),savedAt:Date.now(),tags:[q.course||""]};
+  S.data.qbank.push(bq);
+  saveQbank();
+  if(fbReady&&fbDB){
+    try{await fbDB.collection("question_bank").doc(bq.id).set(bq);}
+    catch(e){console.warn("qbank save:",e);}
+  }
+}
+
+async function saveBankQuestion(){
+  if(S.role!=="lecturer")return;
+  const type=document.getElementById("bq-type").value;
+  const text=document.getElementById("bq-text").value.trim();
+  const course=document.getElementById("bq-course").value;
+  const points=parseInt(document.getElementById("bq-points").value)||1;
+  if(!text){notify("Question text required","err");return;}
+  const q={type,text,points,course};
+  if(type==="mcq"){
+    const opts=[0,1,2,3].map(i=>document.getElementById("bq-opt-"+i).value.trim()).filter(o=>o);
+    if(opts.length<2){notify("Provide at least 2 options","err");return;}
+    const correct=parseInt(document.getElementById("bq-correct").value);
+    if(isNaN(correct)||correct>=opts.length){notify("Select correct option","err");return;}
+    q.options=opts; q.correct=correct;
+  }
+  if(type==="tf"){q.correct=document.getElementById("bq-tf").value==="true";}
+  if(type==="fib"){
+    const accepts=document.getElementById("bq-accepts").value.split("|").map(s=>s.trim()).filter(s=>s);
+    if(accepts.length===0){notify("Provide at least one acceptable answer","err");return;}
+    q.accepts=accepts;
+  }
+  await addToQbank(q);
+  notify("Saved to bank.");
+  // Clear form
+  ["bq-text","bq-points","bq-accepts","bq-opt-0","bq-opt-1","bq-opt-2","bq-opt-3","bq-correct"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  render();
+}
+
+async function deleteBankQuestion(qId){
+  if(!confirm("Delete this question from the bank?"))return;
+  S.data.qbank=S.data.qbank.filter(q=>q.id!==qId);
+  saveQbank();
+  if(fbReady&&fbDB){
+    try{await fbDB.collection("question_bank").doc(qId).delete();}catch(e){}
+  }
+  render();
+}
+
+// ── Student: Take Test ──────────────────────────────────
+function startTakingTest(testId){
+  const t=S.data.tests.find(x=>x.id===testId);if(!t)return;
+  // Check if already submitted
+  const existing=S.data.testSubs.find(s=>s.testId===testId&&s.studentUid===(S.user.id||fbAuth.currentUser?.uid));
+  if(existing){notify("You have already submitted this test.","err");return;}
+  if(!t.published){notify("This test is not yet published.","err");return;}
+  // Window check
+  const now=Date.now();
+  if(t.openAt && new Date(t.openAt).getTime() > now){notify("Test has not opened yet.","err");return;}
+  if(t.closeAt && new Date(t.closeAt).getTime() < now){notify("Test has closed.","err");return;}
+  S.activeTest=testId;
+  S.activeTestStartedAt=Date.now();
+  S.activeAnswers={};
+  S.pg="takeTest";
+  render();
+  if(t.duration>0)startTestTimer(t.duration);
+}
+
+function startTestTimer(durationMins){
+  clearInterval(window._testTimer);
+  const endAt = S.activeTestStartedAt + durationMins*60*1000;
+  window._testTimer = setInterval(()=>{
+    const left = endAt - Date.now();
+    if(left<=0){
+      clearInterval(window._testTimer);
+      notify("Time's up — submitting your test.","info");
+      submitTest(true);
+      return;
+    }
+    const el=document.getElementById("test-timer");
+    if(el){
+      const mins=Math.floor(left/60000), secs=Math.floor((left%60000)/1000);
+      el.textContent=mins+":"+(secs<10?"0":"")+secs;
+      if(left<60000)el.style.color="var(--er)";
+    }
+  },1000);
+}
+
+function recordAnswer(qId,value){S.activeAnswers[qId]=value;}
+
+async function submitTest(autoSubmit){
+  const t=S.data.tests.find(x=>x.id===S.activeTest);if(!t){notify("Test not found","err");return;}
+  if(!autoSubmit && !confirm("Submit your test? You cannot change your answers after submission."))return;
+  clearInterval(window._testTimer);
+  // Collect answers from form (in case state not in sync)
+  (t.questions||[]).forEach(q=>{
+    const el=document.getElementById("ans-"+q.id);
+    if(el){
+      if(q.type==="mcq"){
+        const checked=document.querySelector("input[name='ans-"+q.id+"']:checked");
+        if(checked)S.activeAnswers[q.id]=parseInt(checked.value);
+      } else if(q.type==="tf"){
+        const checked=document.querySelector("input[name='ans-"+q.id+"']:checked");
+        if(checked)S.activeAnswers[q.id]=checked.value==="true";
+      } else {
+        S.activeAnswers[q.id]=el.value;
+      }
+    } else {
+      const checked=document.querySelector("input[name='ans-"+q.id+"']:checked");
+      if(checked){
+        if(q.type==="mcq")S.activeAnswers[q.id]=parseInt(checked.value);
+        else if(q.type==="tf")S.activeAnswers[q.id]=checked.value==="true";
+      }
+    }
+  });
+  const result=gradeSubmission(t, S.activeAnswers);
+  const sub={
+    id:"sub_"+Date.now()+"_"+Math.floor(Math.random()*1000),
+    testId:t.id, testTitle:t.title, courseKey:t.courseKey,
+    studentUid:S.user.id||fbAuth.currentUser?.uid||"unknown",
+    studentName:S.user.name, studentMatric:S.user.matric||"",
+    startedAt:S.activeTestStartedAt, submittedAt:Date.now(),
+    timeUsedSecs:Math.floor((Date.now()-S.activeTestStartedAt)/1000),
+    answers:S.activeAnswers,
+    grades:result.grades,
+    autoScore:result.autoScore, maxAuto:result.maxAuto,
+    manualScore:0, maxManual:result.maxManual,
+    totalScore:result.totalScore, maxTotal:result.maxTotal,
+    status:result.maxManual>0?"pending_manual":"graded",
+    manualGrades:{}
+  };
+  if(fbReady&&fbDB){
+    try{ await fbDB.collection("test_submissions").doc(sub.id).set(sub); }
+    catch(e){ notify("Cloud save failed: "+e.message,"err"); return; }
+  }
+  S.data.testSubs.push(sub);
+  saveTestSubs();
+  S.activeTest=null; S.activeAnswers={}; S.activeTestStartedAt=null;
+  S.pg="tests";
+  render();
+  if(result.maxManual>0){
+    alert("✅ Submitted!\n\nAuto-graded score: "+result.autoScore+"/"+result.maxAuto+"\n\n"+result.maxManual+" points worth of essay/short-answer questions are awaiting your lecturer's review.");
+  } else {
+    alert("✅ Submitted!\n\nYour score: "+result.totalScore+"/"+result.maxTotal);
+  }
+}
+
+// ── Lecturer: Grade manual answers ─────────────────────
+async function saveManualGrade(subId){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const sub=S.data.testSubs.find(s=>s.id===subId);if(!sub)return;
+  const test=S.data.tests.find(t=>t.id===sub.testId);if(!test)return;
+  let manualTotal=0;
+  const manualGrades={};
+  (test.questions||[]).forEach(q=>{
+    if(q.type==="short"||q.type==="essay"){
+      const ptsEl=document.getElementById("mg-pts-"+q.id);
+      const fbEl=document.getElementById("mg-fb-"+q.id);
+      const pts=Math.min(parseInt(ptsEl?.value)||0, q.points);
+      manualGrades[q.id]={points:pts, feedback:fbEl?.value||""};
+      manualTotal+=pts;
+    }
+  });
+  sub.manualGrades=manualGrades;
+  sub.manualScore=manualTotal;
+  sub.totalScore=sub.autoScore+manualTotal;
+  sub.status="graded";
+  sub.gradedAt=Date.now();
+  if(fbReady&&fbDB){
+    try{ await fbDB.collection("test_submissions").doc(sub.id).set(sub); }
+    catch(e){ notify("Save failed: "+e.message,"err"); return; }
+  }
+  saveTestSubs();
+  S.gradingSub=null;
+  notify("Grade saved. Total: "+sub.totalScore+"/"+sub.maxTotal);
+  render();
+}
+
+// ── CSV Export Helpers ─────────────────────────────────
+function csvEscape(v){
+  if(v===null||v===undefined)return "";
+  let s=String(v);
+  if(s.includes(",")||s.includes("\"")||s.includes("\n")||s.includes("\r")){
+    s='"'+s.replace(/"/g,'""')+'"';
+  }
+  return s;
+}
+function downloadCSV(filename, rows){
+  const csv=rows.map(r=>r.map(csvEscape).join(",")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}); // BOM for Excel
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+function exportTestResultsCSV(testId){
+  const test=S.data.tests.find(t=>t.id===testId);if(!test){notify("Test not found","err");return;}
+  const subs=S.data.testSubs.filter(s=>s.testId===testId);
+  if(subs.length===0){notify("No submissions to export","err");return;}
+  const header=["Student Name","Matric Number","Submitted At","Time Used (mins)","Auto Score","Auto Max","Manual Score","Manual Max","Total Score","Total Max","Percentage","Status"];
+  const rows=[header];
+  subs.sort((a,b)=>(b.totalScore||0)-(a.totalScore||0)).forEach(s=>{
+    const pct=s.maxTotal>0?Math.round((s.totalScore/s.maxTotal)*100):0;
+    const mins=Math.floor((s.timeUsedSecs||0)/60)+":"+(((s.timeUsedSecs||0)%60).toString().padStart(2,"0"));
+    rows.push([
+      s.studentName||"", s.studentMatric||"",
+      new Date(s.submittedAt||0).toLocaleString("en-NG"),
+      mins, s.autoScore||0, s.maxAuto||0,
+      s.manualScore||0, s.maxManual||0,
+      s.totalScore||0, s.maxTotal||0,
+      pct+"%", s.status||""
+    ]);
+  });
+  const fname=(test.course||"Test").replace(/\s/g,"_")+"_"+(test.title||"").replace(/[^a-z0-9]/gi,"_").substring(0,30)+"_results.csv";
+  downloadCSV(fname,rows);
+  notify("CSV downloaded — open in Excel or upload to any LMS.");
+}
+function exportAttendanceCSV(courseCode){
+  const k=ck(courseCode);
+  const sessions=(S.data.attendance[k]||[]).filter(s=>!s.open).sort((a,b)=>(a.id||0)-(b.id||0));
+  if(sessions.length===0){notify("No closed sessions to export","err");return;}
+  const enrolled=ROSTER.filter(r=>r.course===courseCode).sort((a,b)=>a.name.localeCompare(b.name));
+  if(enrolled.length===0){notify("No enrolled students found","err");return;}
+  // Build header: Name, Matric, Session1Date-Topic, Session2..., Total Present, Total Late, Total Absent, % Attended
+  const header=["Student Name","Matric"];
+  sessions.forEach(s=>header.push((s.date||"")+" — "+(s.topic||"Session")));
+  header.push("Total Present","Total Late","Total Absent","Sessions Held","Attendance %");
+  const rows=[header];
+  enrolled.forEach(stu=>{
+    const row=[stu.name,stu.matric];
+    let pres=0,late=0,abs=0;
+    sessions.forEach(s=>{
+      const rec=(s.records||[]).find(r=>r.matric===stu.matric);
+      const status=rec?.status||"absent";
+      row.push(status.toUpperCase());
+      if(status==="present")pres++;
+      else if(status==="late")late++;
+      else abs++;
+    });
+    const total=sessions.length;
+    const pct=total>0?Math.round(((pres+late)/total)*100):0;
+    row.push(pres,late,abs,total,pct+"%");
+    rows.push(row);
+  });
+  const fname=courseCode.replace(/\s/g,"_")+"_Attendance_"+new Date().toISOString().split("T")[0]+".csv";
+  downloadCSV(fname,rows);
+  notify("Attendance CSV downloaded.");
+}
+
+
 
 // ═══════════════════════════════════════════════════════
 // RENDER — AUTH
@@ -1340,7 +2024,8 @@ function rCAttendance(c){
     <div class="att-code-box">
       <div class="att-status-open"><span style="width:8px;height:8px;background:#7FFFB0;border-radius:50%;display:inline-block"></span> Session Open</div>
       <div class="att-code-label">Session Code — Show this to your class</div>
-      <div class="att-code">${openSess.code}</div>
+      <div class="att-code" id="live-code">${getActiveCode(openSess)||"------"}</div>
+      <div id="code-timer" style="font-size:12px;color:rgba(255,255,255,.55);margin-top:-8px;margin-bottom:8px">Changes every 2 minutes</div>
       <div style="font-size:13px;color:rgba(255,255,255,.6)">${openSess.date} · ${openSess.topic} · Grace period: ${openSess.graceMins} minutes</div>
       <div class="att-code-tip">✅ Present = within ${openSess.graceMins} min &nbsp;·&nbsp; 🕐 Late = after ${openSess.graceMins} min &nbsp;·&nbsp; Each student can only mark once</div>
     </div>
@@ -1348,6 +2033,7 @@ function rCAttendance(c){
       <h3 style="font-size:17px">Class Register — ${openSess.date}</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-sm" style="background:#D4EFDF;color:#1A6B3A" onclick="addAbsentees('${c.code}',${openSess.id})">Mark Remaining Absent</button>
+        ${sessions.filter(s=>!s.open).length>0?`<button class="btn btn-o btn-sm" onclick="exportAttendanceCSV('${c.code}')">📥 CSV (All Sessions)</button>`:""}
         <button class="btn btn-d btn-sm" onclick="closeAttSession('${c.code}',${openSess.id})">Close Session</button>
       </div>
     </div>
@@ -1367,7 +2053,7 @@ function rCAttendance(c){
 
     <!-- PAST SESSIONS -->
     ${sessions.filter(s=>!s.open).length>0?`
-    <div class="sh"><h3 style="font-size:17px">Past Sessions</h3></div>
+    <div class="sh"><h3 style="font-size:17px">Past Sessions</h3><button class="btn btn-o btn-sm" onclick="exportAttendanceCSV('${c.code}')">📥 Export All to CSV</button></div>
     ${sessions.filter(s=>!s.open).map(s=>{
       const pres=s.records.filter(r=>r.status==="present").length;
       const late=s.records.filter(r=>r.status==="late").length;
@@ -1375,7 +2061,7 @@ function rCAttendance(c){
       return `<div class="att-summary-card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div><div style="font-size:15px;font-weight:600;color:var(--dk)">${s.date} — ${s.topic}</div>
-          <div style="font-size:12px;color:var(--mt)">Code: <strong>${s.code}</strong> · ${s.records.length} students</div></div>
+          <div style="font-size:12px;color:var(--mt)">${s.manual?"Manually recorded":"Closed session"} · ${s.records.length} students</div></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span class="att-chip att-present">✅ ${pres} Present</span>
             <span class="att-chip att-late">🕐 ${late} Late</span>
@@ -1556,12 +2242,125 @@ function rAssignPg(){
 }
 
 // ── GRADING ──────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+// SCORES SYSTEM — Milestone F: Live Score Recording
+// ══════════════════════════════════════════════════════
+
+function scoreDocId(courseKey, matric){
+  return "score_"+courseKey+"_"+String(matric).replace(/\W/g,"_");
+}
+
+function computeGrade(total){
+  if(total===null||total===undefined||total==="")return{l:"—",cl:"",gp:"—"};
+  const t=Number(total);
+  if(t>=70)return{l:"A",cl:"ga",gp:"5.0"};
+  if(t>=60)return{l:"B",cl:"gb",gp:"4.0"};
+  if(t>=50)return{l:"C",cl:"gc",gp:"3.0"};
+  if(t>=45)return{l:"D",cl:"gd",gp:"2.0"};
+  return{l:"F",cl:"gf",gp:"0.0"};
+}
+
+async function loadScoresFromFirestore(){
+  if(!fbReady||!fbDB) return;
+  try{
+    const snap=await fbDB.collection("scores").get();
+    snap.forEach(doc=>{
+      const d=doc.data();
+      S.data.scores[doc.id]=d;
+    });
+    saveScores();
+    console.log("✓ Scores loaded from Firestore:",snap.size);
+  }catch(e){console.warn("loadScoresFromFirestore:",e);}
+}
+
+let fbScoresUnsub=null;
+function startScoresListener(){
+  if(!fbReady||!fbDB||!S.user) return;
+  if(fbScoresUnsub){try{fbScoresUnsub();}catch(e){}}
+  fbScoresUnsub=fbDB.collection("scores").onSnapshot(snap=>{
+    snap.docChanges().forEach(change=>{
+      if(change.type==="removed") delete S.data.scores[change.doc.id];
+      else S.data.scores[change.doc.id]=change.doc.data();
+    });
+    saveScores();
+    if(S.pg==="results"||S.pg==="grading") render();
+  },err=>console.warn("Scores listener:",err));
+}
+
+async function saveStudentScore(courseCode, matric, studentName, ca, exam){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const k=ck(courseCode);
+  const caVal=ca===""?null:Math.min(Math.max(parseFloat(ca)||0,0),CFG.caMax);
+  const examVal=exam===""?null:Math.min(Math.max(parseFloat(exam)||0,0),CFG.examMax);
+  const total=(caVal!==null&&examVal!==null)?caVal+examVal:null;
+  const g=computeGrade(total);
+  const rec={
+    id:scoreDocId(k,matric), courseKey:k, course:courseCode,
+    matric:String(matric), studentName,
+    ca:caVal, exam:examVal, total,
+    grade:g.l, gradePoint:g.gp,
+    updatedAt:Date.now(), updatedBy:S.user.name||"Lecturer"
+  };
+  S.data.scores[rec.id]=rec;
+  saveScores();
+  if(fbReady&&fbDB){
+    try{await fbDB.collection("scores").doc(rec.id).set(rec);}
+    catch(e){notify("Cloud save failed: "+e.message,"err");}
+  }
+}
+
+async function saveBatchScores(courseCode){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const enrolled=ROSTER.filter(r=>r.course===courseCode);
+  const promises=enrolled.map(r=>{
+    const caEl=document.getElementById("sc-ca-"+r.matric);
+    const exEl=document.getElementById("sc-ex-"+r.matric);
+    if(!caEl&&!exEl)return Promise.resolve();
+    return saveStudentScore(courseCode, r.matric, r.name, caEl?.value??"", exEl?.value??"");
+  });
+  await Promise.all(promises);
+  notify("✓ All scores saved to cloud — students can now see their results.");
+  render();
+}
+
+function getScore(courseCode, matric){
+  const k=ck(courseCode);
+  return S.data.scores[scoreDocId(k,matric)]||null;
+}
+
+function exportScoresCSV(courseCode){
+  if(S.role!=="lecturer"){notify("Lecturer only","err");return;}
+  const enrolled=ROSTER.filter(r=>r.course===courseCode);
+  if(enrolled.length===0){notify("No students found for this course","err");return;}
+  const headers=["Name","Matric","CA ("+CFG.caMax+")","Exam ("+CFG.examMax+")","Total (100)","Grade","Grade Point"];
+  const rows=enrolled.map(r=>{
+    const sc=getScore(courseCode,r.matric);
+    const g=computeGrade(sc?.total);
+    return[r.name,r.matric,sc?.ca??"",sc?.exam??"",sc?.total??"",sc?.grade||g.l,sc?.gradePoint||g.gp];
+  });
+  const csv=[headers,...rows].map(r=>r.map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(",")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=courseCode.replace(/\s/g,"_")+"_Scores.csv";a.click();
+  notify("Scores CSV downloaded.");
+}
+
 function rGrading(){
-  const fc=S.gradeCourse;const assigns=S.data.assignments[ck(fc)]||[];const subs=S.data.submissions[ck(fc)]||[];
+  const fc=S.gradeCourse;
+  const tab=S.gradeTab||"assignments";
   return `<div>
-  <div class="cf">${COURSES.map(c=>`<div class="cf-btn ${fc===c.code?"on":""}" onclick="S.gradeCourse='${c.code}';render()">${c.code}</div>`).join("")}</div>
-  ${assigns.length===0?`<div class="empty"><div class="ei">📝</div><h4>No assignments for ${fc}</h4></div>`:""}
-  ${assigns.map(a=>{
+    <div class="cf" style="margin-bottom:16px">${COURSES.map(c=>`<div class="cf-btn ${fc===c.code?"on":""}" onclick="S.gradeCourse='${c.code}';render()">${c.code}</div>`).join("")}</div>
+    <div class="ctabs" style="margin-bottom:18px">
+      ${[["assignments","📝 Assignments"],["scores","📊 Score Entry"]].map(([t,l])=>`<div class="ctab ${tab===t?"on":""}" onclick="S.gradeTab='${t}';render()">${l}</div>`).join("")}
+    </div>
+    ${tab==="assignments"?rGradingAssignments(fc):rScoreEntry(fc)}
+  </div>`;
+}
+
+function rGradingAssignments(fc){
+  const assigns=S.data.assignments[ck(fc)]||[];const subs=S.data.submissions[ck(fc)]||[];
+  if(assigns.length===0)return`<div class="empty"><div class="ei">📝</div><h4>No assignments for ${fc}</h4></div>`;
+  return assigns.map(a=>{
     const asubs=subs.filter(s=>s.assignId===a.id);
     return`<div style="margin-bottom:18px">
       <div style="background:var(--p1);color:#fff;padding:11px 16px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
@@ -1583,36 +2382,524 @@ function rGrading(){
           </tr>`).join("")}</tbody>
         </table></div>`}
       </div>
-    </div>`;}).join("")}
+    </div>`;}).join("");
+}
+
+function rScoreEntry(courseCode){
+  const enrolled=ROSTER.filter(r=>r.course===courseCode);
+  if(enrolled.length===0)return`<div class="empty"><div class="ei">📊</div><h4>No students in ROSTER for ${courseCode}</h4></div>`;
+  return`<div>
+    <div class="panel" style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div>
+          <h3 style="margin:0">Score Entry — ${courseCode}</h3>
+          <p style="font-size:12px;color:var(--mt);margin-top:4px">CA out of ${CFG.caMax} · Exam out of ${CFG.examMax} · Total out of 100 · Saves to cloud instantly</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-o btn-sm" onclick="exportScoresCSV('${courseCode}')">📥 Export CSV</button>
+          <button class="btn btn-p" onclick="saveBatchScores('${courseCode}')">💾 Save All Scores</button>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:var(--p1);color:#fff">
+        <th style="padding:10px 14px;text-align:left">#</th>
+        <th style="padding:10px 14px;text-align:left">Student Name</th>
+        <th style="padding:10px 14px;text-align:left">Matric No.</th>
+        <th style="padding:10px 14px;text-align:center">CA /${CFG.caMax}</th>
+        <th style="padding:10px 14px;text-align:center">Exam /${CFG.examMax}</th>
+        <th style="padding:10px 14px;text-align:center">Total</th>
+        <th style="padding:10px 14px;text-align:center">Grade</th>
+        <th style="padding:10px 14px;text-align:center">Save</th>
+      </tr></thead>
+      <tbody>${enrolled.map((r,i)=>{
+        const sc=getScore(courseCode,r.matric);
+        const caVal=sc?.ca!==null&&sc?.ca!==undefined?sc.ca:"";
+        const exVal=sc?.exam!==null&&sc?.exam!==undefined?sc.exam:"";
+        const total=sc?.total!==null&&sc?.total!==undefined?sc.total:"—";
+        const g=computeGrade(sc?.total);
+        return`<tr style="${i%2===0?"background:var(--ww)":"background:var(--cr)"};border-bottom:1px solid var(--br)">
+          <td style="padding:8px 14px;color:var(--mt)">${i+1}</td>
+          <td style="padding:8px 14px;font-weight:500">${r.name}</td>
+          <td style="padding:8px 14px;color:var(--mt)">${r.matric}</td>
+          <td style="padding:8px 6px;text-align:center"><input id="sc-ca-${r.matric}" type="number" min="0" max="${CFG.caMax}" value="${caVal}" style="width:60px;text-align:center;padding:4px 6px;border:1.5px solid var(--br);border-radius:6px;font-size:13px"></td>
+          <td style="padding:8px 6px;text-align:center"><input id="sc-ex-${r.matric}" type="number" min="0" max="${CFG.examMax}" value="${exVal}" style="width:60px;text-align:center;padding:4px 6px;border:1.5px solid var(--br);border-radius:6px;font-size:13px"></td>
+          <td style="padding:8px 14px;text-align:center;font-weight:700;color:var(--p2)">${total}</td>
+          <td style="padding:8px 14px;text-align:center"><span class="gc ${g.cl}">${g.l!=="—"?g.l:""}</span></td>
+          <td style="padding:8px 14px;text-align:center"><button class="btn btn-g btn-sm" onclick="saveStudentScore('${courseCode}','${r.matric}','${r.name.replace(/'/g,"\\'")}',document.getElementById('sc-ca-${r.matric}')?.value||'',document.getElementById('sc-ex-${r.matric}')?.value||'').then(()=>notify('✓ Saved'))">💾</button></td>
+        </tr>`;
+      }).join("")}</tbody>
+    </table></div>
+    <p style="margin-top:12px;font-size:12px;color:var(--mt)">💡 Fill the whole table then click "Save All Scores", or click 💾 on each row to save individually. Students see results instantly.</p>
   </div>`;
 }
 
+
 // ── RESULTS ──────────────────────────────────────────────────
 function rResults(){
-  const allU=S.data.users.filter(u=>u.role==="student");
-  const vis=S.role==="lecturer"?allU:allU.filter(u=>u.id===S.user?.id);
-  const rows=vis.map(u=>{
-    const scores={};COURSES.forEach(c=>{const best=(S.data.submissions[ck(c.code)]||[]).filter(s=>s.student===u.name&&s.grade!==null);scores[c.code]=best.length?best[best.length-1].grade:null;});
-    return{name:u.name,matric:u.matric,scores};
+  if(S.role==="student"){
+    // Student sees only their own scores across all courses
+    const myMatric=S.user?.matric||"";
+    const myName=S.user?.name||"";
+    const rows=COURSES.map(c=>{
+      const sc=getScore(c.code,myMatric);
+      const g=computeGrade(sc?.total);
+      return{course:c.code,title:c.title,ca:sc?.ca,exam:sc?.exam,total:sc?.total,grade:g,sc};
+    });
+    const graded=rows.filter(r=>r.total!==null&&r.total!==undefined);
+    const cgpa=graded.length?(graded.reduce((a,r)=>a+parseFloat(r.grade.gp),0)/graded.length).toFixed(2):"—";
+    return`<div>
+      <div class="panel" style="margin-bottom:18px;border-left:4px solid var(--p2)">
+        <h3 style="margin:0">${myName}</h3>
+        <p style="font-size:12px;color:var(--mt);margin-top:4px">${myMatric} · ${CFG.session}</p>
+        <p style="margin-top:10px;font-size:20px;font-weight:700;color:var(--p2)">CGPA: ${cgpa}</p>
+      </div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:var(--p1);color:#fff">
+          <th style="padding:10px 14px;text-align:left">Course</th>
+          <th style="padding:10px 14px;text-align:center">CA /${CFG.caMax}</th>
+          <th style="padding:10px 14px;text-align:center">Exam /${CFG.examMax}</th>
+          <th style="padding:10px 14px;text-align:center">Total</th>
+          <th style="padding:10px 14px;text-align:center">Grade</th>
+          <th style="padding:10px 14px;text-align:center">GP</th>
+        </tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr style="${i%2===0?"background:var(--ww)":"background:var(--cr)"};border-bottom:1px solid var(--br)">
+          <td style="padding:10px 14px"><strong>${r.course}</strong><br><span style="font-size:11px;color:var(--mt)">${r.title.substring(0,40)}…</span></td>
+          <td style="padding:10px 14px;text-align:center">${r.ca!==null&&r.ca!==undefined?r.ca:"—"}</td>
+          <td style="padding:10px 14px;text-align:center">${r.exam!==null&&r.exam!==undefined?r.exam:"—"}</td>
+          <td style="padding:10px 14px;text-align:center;font-weight:700;color:var(--p2)">${r.total!==null&&r.total!==undefined?r.total:"—"}</td>
+          <td style="padding:10px 14px;text-align:center"><span class="gc ${r.grade.cl}">${r.grade.l}</span></td>
+          <td style="padding:10px 14px;text-align:center;font-weight:600">${r.grade.gp}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      ${rGradingScale()}
+    </div>`;
+  }
+  // Lecturer sees all students
+  const enrolled=[...new Set(ROSTER.map(r=>r.matric))].map(mat=>{
+    const r=ROSTER.find(x=>x.matric===mat);
+    return{name:r.name,matric:mat};
   });
-  return `<div>
-  <p style="font-size:13px;color:var(--mt);margin-bottom:18px">${CFG.session} · ${CFG.college}</p>
-  ${rows.length===0?`<div class="empty"><div class="ei">📊</div><h4>No grades yet</h4></div>`:`
-  <div class="rtw"><table class="rtbl"><thead><tr>
-    <th>Student</th><th>Matric</th>${COURSES.map(c=>`<th>${c.code}</th>`).join("")}<th>GPA</th>
-  </tr></thead><tbody>
-  ${rows.map(r=>{
-    const graded=Object.values(r.scores).filter(s=>s!==null);
-    const gpa=graded.length?(graded.reduce((a,b)=>a+b,0)/graded.length/20).toFixed(2):"—";
-    return`<tr><td style="font-weight:500">${r.name}</td><td style="color:var(--mt)">${r.matric||"—"}</td>
-      ${COURSES.map(c=>{const g=grade(r.scores[c.code]);return`<td><span class="gc ${g.cl}">${r.scores[c.code]!==null?r.scores[c.code]+" ("+g.l+")":"—"}</span></td>`;}).join("")}
-      <td><strong style="color:var(--p2)">${gpa}</strong></td></tr>`;}).join("")}
-  </tbody></table></div>`}
-  <div class="panel" style="margin-top:18px;max-width:440px"><h3>Grading Scale</h3>
+  if(enrolled.length===0)return`<div class="empty"><div class="ei">📊</div><h4>No scores yet</h4><p>Enter scores in Grading → Score Entry first.</p></div>`;
+  return`<div>
+    <p style="font-size:13px;color:var(--mt);margin-bottom:18px">${CFG.session} · ${CFG.college}</p>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:var(--p1);color:#fff">
+        <th style="padding:9px 12px;text-align:left">Student</th>
+        <th style="padding:9px 12px;text-align:left">Matric</th>
+        ${COURSES.map(c=>`<th style="padding:9px 12px;text-align:center;white-space:nowrap">${c.code}<br><span style="font-size:10px;opacity:.75">CA/Exam/Total</span></th>`).join("")}
+        <th style="padding:9px 12px;text-align:center">CGPA</th>
+      </tr></thead>
+      <tbody>${enrolled.map((u,i)=>{
+        const courseScores=COURSES.map(c=>{
+          const sc=getScore(c.code,u.matric);
+          const g=computeGrade(sc?.total);
+          return{sc,g};
+        });
+        const graded=courseScores.filter(x=>x.sc?.total!==null&&x.sc?.total!==undefined);
+        const cgpa=graded.length?(graded.reduce((a,x)=>a+parseFloat(x.g.gp),0)/graded.length).toFixed(2):"—";
+        return`<tr style="${i%2===0?"background:var(--ww)":"background:var(--cr)"};border-bottom:1px solid var(--br)">
+          <td style="padding:8px 12px;font-weight:500;white-space:nowrap">${u.name}</td>
+          <td style="padding:8px 12px;color:var(--mt)">${u.matric}</td>
+          ${courseScores.map(({sc,g})=>`<td style="padding:8px 12px;text-align:center">
+            ${sc?.total!==null&&sc?.total!==undefined?`<span class="gc ${g.cl}" style="font-size:11px">${sc.ca}/${sc.exam}/<strong>${sc.total}</strong></span>`:`<span style="color:var(--mt)">—</span>`}
+          </td>`).join("")}
+          <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--p2)">${cgpa}</td>
+        </tr>`;
+      }).join("")}</tbody>
+    </table></div>
+    ${rGradingScale()}
+  </div>`;
+}
+
+function rGradingScale(){
+  return`<div class="panel" style="margin-top:18px;max-width:440px"><h3>Grading Scale</h3>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
       ${[["A","70–100","5.0"],["B","60–69","4.0"],["C","50–59","3.0"],["D","45–49","2.0"],["F","0–44","0.0"]].map(([l,r,gp])=>`<div style="background:var(--cr);border:1px solid var(--br);border-radius:8px;padding:8px 12px;text-align:center;min-width:66px"><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--p2)">${l}</div><div style="font-size:11px;color:var(--mt)">${r}</div><div style="font-size:11px;font-weight:600">GP: ${gp}</div></div>`).join("")}
     </div>
-  </div></div>`;
+  </div>`;
+}
+
+// ── TESTS ────────────────────────────────────────────────────
+function escapeHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+function rTests(){
+  if(S.role==="lecturer")return rTestsLec();
+  return rTestsStudent();
+}
+
+function rTestsLec(){
+  const tab=S.testTab||"all";
+  return `<div>
+    <div class="ctabs" style="margin-bottom:20px">
+      ${[["all","📋 All Tests"],["create","➕ Create New"],["bank","📚 Question Bank"],["submissions","✅ Submissions"]].map(([t,l])=>`<div class="ctab ${tab===t?"on":""}" onclick="S.testTab='${t}';S.activeTest=null;S.gradingSub=null;render()">${l}</div>`).join("")}
+    </div>
+    ${tab==="all"?rTestsListLec():
+      tab==="create"?rTestCreateForm():
+      tab==="edit"?rTestEditor():
+      tab==="bank"?rQbankPage():
+      tab==="submissions"?rSubmissionsPage():""}
+  </div>`;
+}
+
+function rTestsListLec(){
+  if(!S.data.tests.length){
+    return `<div class="empty"><div class="ei">🧪</div><h4>No tests yet</h4><p>Click "Create New" to build your first test.</p></div>`;
+  }
+  const sorted=[...S.data.tests].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  return `<div style="display:grid;gap:14px">
+    ${sorted.map(t=>{
+      const subs=S.data.testSubs.filter(s=>s.testId===t.id);
+      const qCount=(t.questions||[]).length;
+      const totalPts=(t.questions||[]).reduce((a,q)=>a+(q.points||0),0);
+      return `<div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div style="flex:1;min-width:240px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <h3 style="margin:0">${escapeHtml(t.title)}</h3>
+              ${t.published?`<span style="background:var(--su);color:#fff;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600">PUBLISHED</span>`:`<span style="background:var(--sv);color:#fff;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600">DRAFT</span>`}
+            </div>
+            <p class="cm" style="margin-top:6px">📘 ${t.course} · ${qCount} questions · ${totalPts} pts ${t.duration?"· ⏱️ "+t.duration+" min":"· No timer"} · 📥 ${subs.length} submissions</p>
+            ${t.instructions?`<p style="font-size:12px;color:var(--mt);margin-top:6px">${escapeHtml(t.instructions.substring(0,140))}${t.instructions.length>140?"…":""}</p>`:""}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm ${t.published?"btn-sv":"btn-g"}" onclick="togglePublish('${t.id}')">${t.published?"📌 Unpublish":"🚀 Publish"}</button>
+            <button class="btn btn-o btn-sm" onclick="S.activeTest='${t.id}';S.testTab='edit';render()">✏️ Edit</button>
+            ${subs.length>0?`<button class="btn btn-o btn-sm" onclick="exportTestResultsCSV('${t.id}')">📥 CSV</button>`:""}
+            <button class="btn btn-d btn-sm" onclick="deleteTest('${t.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+function rTestCreateForm(){
+  return `<div class="panel" style="border:1.5px solid var(--p3);max-width:680px">
+    <h3>Create a New Test</h3>
+    <p style="font-size:13px;color:var(--mt);margin-bottom:18px">Fill in the basics — you'll add questions on the next screen.</p>
+    <div class="fg"><label>Test Title *</label><input id="nt-title" placeholder="e.g., Mid-Semester Test on Yoruba Drama"></div>
+    <div class="fg"><label>Course *</label><select id="nt-course">${COURSES.map(c=>`<option value="${c.code}">${c.code} — ${c.title}</option>`).join("")}</select></div>
+    <div class="fg"><label>Instructions for Students</label><textarea id="nt-instr" rows="3" placeholder="Read each question carefully. You have one attempt. Good luck!"></textarea></div>
+    <div class="g2">
+      <div class="fg"><label>Duration in Minutes (0 = no timer)</label><input id="nt-dur" type="number" min="0" placeholder="e.g., 30"></div>
+      <div class="fg"><label>Total Points (computed from questions)</label><input value="0" readonly style="background:var(--svl)"></div>
+    </div>
+    <div class="g2">
+      <div class="fg"><label>Opens At (optional)</label><input id="nt-open" type="datetime-local"></div>
+      <div class="fg"><label>Closes At (optional)</label><input id="nt-close" type="datetime-local"></div>
+    </div>
+    <button class="btn btn-p btn-full" onclick="createTest()">Create Test & Add Questions →</button>
+  </div>`;
+}
+
+function rTestEditor(){
+  const t=S.data.tests.find(x=>x.id===S.activeTest);
+  if(!t)return `<div class="empty"><div class="ei">❓</div><h4>Test not found</h4><button class="btn btn-p btn-sm" onclick="S.testTab='all';render()">← Back to All Tests</button></div>`;
+  const totalPts=(t.questions||[]).reduce((a,q)=>a+(q.points||0),0);
+  return `<div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+      <div>
+        <h3 style="font-size:22px;color:var(--p1)">${escapeHtml(t.title)}</h3>
+        <p style="font-size:12px;color:var(--mt)">${t.course} · ${(t.questions||[]).length} questions · ${totalPts} pts ${t.duration?"· ⏱️ "+t.duration+" min":""}</p>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${t.published?`<button class="btn btn-sv btn-sm" onclick="togglePublish('${t.id}')">📌 Unpublish</button>`:`<button class="btn btn-g btn-sm" onclick="togglePublish('${t.id}')">🚀 Publish</button>`}
+        <button class="btn btn-gh btn-sm" onclick="S.testTab='all';S.activeTest=null;render()">← Back</button>
+      </div>
+    </div>
+
+    ${(t.questions||[]).length>0?`<div class="panel" style="margin-bottom:18px"><h3>Questions in this Test</h3>
+      ${t.questions.map((q,i)=>{
+        const typeLabel={mcq:"🔘 MCQ",tf:"✓✗ True/False",fib:"___ Fill in the Blank",short:"✏️ Short Answer",essay:"📝 Essay"}[q.type]||q.type;
+        let body="";
+        if(q.type==="mcq")body=`<ul style="margin:8px 0 0 18px;font-size:13px">${q.options.map((o,oi)=>`<li style="${oi===q.correct?"color:var(--su);font-weight:600":""}">${escapeHtml(o)}${oi===q.correct?" ✓":""}</li>`).join("")}</ul>`;
+        else if(q.type==="tf")body=`<p style="margin-top:6px;font-size:13px;color:var(--su)">Correct: ${q.correct?"True":"False"} ✓</p>`;
+        else if(q.type==="fib")body=`<p style="margin-top:6px;font-size:13px;color:var(--su)">Accepts: ${q.accepts.map(escapeHtml).join(" / ")}</p>`;
+        else body=`<p style="margin-top:6px;font-size:12px;color:var(--mt);font-style:italic">Manual grading (lecturer reviews after submission)</p>`;
+        return `<div style="background:var(--cr);border:1px solid var(--br);border-radius:8px;padding:14px;margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+            <div style="flex:1"><strong>Q${i+1}.</strong> <span style="font-size:11px;color:var(--mt);margin-left:6px">${typeLabel} · ${q.points} pt${q.points===1?"":"s"}</span>
+              <p style="margin-top:4px">${escapeHtml(q.text)}</p>
+              ${body}
+            </div>
+            <button class="btn btn-d btn-sm" onclick="deleteQuestion('${t.id}','${q.id}')">🗑️</button>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`:""}
+
+    <div class="panel" style="border:1.5px solid var(--p3)">
+      <h3>Add a Question</h3>
+      ${(function(){
+        const curType = document.getElementById("nq-type")?.value || "mcq";
+        return `<div class="g2">
+        <div class="fg"><label>Question Type</label><select id="nq-type" onchange="render()">
+          <option value="mcq" ${curType==="mcq"?"selected":""}>🔘 Multiple Choice (auto-graded)</option>
+          <option value="tf" ${curType==="tf"?"selected":""}>✓✗ True/False (auto-graded)</option>
+          <option value="fib" ${curType==="fib"?"selected":""}>___ Fill in the Blank (auto-graded)</option>
+          <option value="short" ${curType==="short"?"selected":""}>✏️ Short Answer (you grade manually)</option>
+          <option value="essay" ${curType==="essay"?"selected":""}>📝 Essay (you grade manually)</option>
+        </select></div>
+        <div class="fg"><label>Points *</label><input id="nq-points" type="number" min="1" value="1"></div>
+      </div>
+      <div class="fg"><label>Question Text *</label><textarea id="nq-text" rows="2" placeholder="Type your question here..."></textarea></div>
+      ${rQuestionTypeFields("nq", curType)}`;
+      })()}
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:10px 0"><input type="checkbox" id="nq-save-bank"> Also save to Question Bank for reuse</label>
+      ${S.data.qbank.length>0?`<div style="border-top:1px solid var(--br);padding-top:12px;margin-top:12px">
+        <label style="font-size:11.5px;font-weight:600;color:var(--mid);text-transform:uppercase">📚 Or pull from Question Bank</label>
+        <div style="margin-top:8px;max-height:180px;overflow-y:auto;border:1px solid var(--br);border-radius:8px">
+        ${S.data.qbank.filter(bq=>!bq.course||bq.course===t.course).slice(0,20).map(bq=>`<div style="padding:8px 12px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;gap:10px;align-items:center"><span style="font-size:12px;flex:1">${escapeHtml(bq.text.substring(0,80))}${bq.text.length>80?"…":""} <span style="color:var(--mt)">· ${bq.type.toUpperCase()} · ${bq.points}pt</span></span><button class="btn btn-o btn-sm" onclick="pullFromBank('${t.id}','${bq.id}')">+ Add</button></div>`).join("")}
+        </div>
+      </div>`:""}
+      <button class="btn btn-p btn-full" style="margin-top:12px" onclick="addQuestionToTest('${t.id}')">Add Question to Test</button>
+    </div>
+  </div>`;
+}
+
+function rQuestionTypeFields(prefix,type){
+  if(type==="mcq"){
+    return `<div class="fg"><label>Options (provide at least 2, leave extras blank)</label>
+      ${[0,1,2,3].map(i=>`<input id="${prefix}-opt-${i}" placeholder="Option ${"ABCD"[i]}" style="margin-bottom:6px">`).join("")}
+    </div>
+    <div class="fg"><label>Correct Option *</label><select id="${prefix}-correct">
+      ${[0,1,2,3].map(i=>`<option value="${i}">${"ABCD"[i]}</option>`).join("")}
+    </select></div>`;
+  }
+  if(type==="tf"){
+    return `<div class="fg"><label>Correct Answer *</label><select id="${prefix}-tf">
+      <option value="true">True</option><option value="false">False</option>
+    </select></div>`;
+  }
+  if(type==="fib"){
+    return `<div class="fg"><label>Acceptable Answers (separate with |) *</label>
+      <input id="${prefix}-accepts" placeholder="e.g.,  Ibsen | Henrik Ibsen | henrik ibsen">
+      <p style="font-size:11px;color:var(--mt);margin-top:4px">Matching is case-insensitive and ignores extra spaces. Use | to list variants.</p>
+    </div>`;
+  }
+  return `<div style="background:var(--svl);padding:10px;border-radius:6px;font-size:12px;color:var(--mt)">💡 You will grade ${type==="essay"?"essay":"short answer"} submissions manually after students submit.</div>`;
+}
+
+function rQbankPage(){
+  const filtered=S.data.qbank;
+  return `<div>
+    <div class="panel" style="border:1.5px solid var(--p3);margin-bottom:18px">
+      <h3>Add to Question Bank</h3>
+      <p style="font-size:13px;color:var(--mt);margin-bottom:12px">Questions saved here can be reused in any test, this semester or next.</p>
+      ${(function(){
+        const curType = document.getElementById("bq-type")?.value || "mcq";
+        return `<div class="g2">
+        <div class="fg"><label>Question Type</label><select id="bq-type" onchange="render()">
+          <option value="mcq" ${curType==="mcq"?"selected":""}>🔘 Multiple Choice</option>
+          <option value="tf" ${curType==="tf"?"selected":""}>✓✗ True/False</option>
+          <option value="fib" ${curType==="fib"?"selected":""}>___ Fill in the Blank</option>
+          <option value="short" ${curType==="short"?"selected":""}>✏️ Short Answer</option>
+          <option value="essay" ${curType==="essay"?"selected":""}>📝 Essay</option>
+        </select></div>
+        <div class="fg"><label>Course Tag</label><select id="bq-course">${COURSES.map(c=>`<option value="${c.code}">${c.code}</option>`).join("")}</select></div>
+      </div>
+      <div class="g2">
+        <div class="fg"><label>Points</label><input id="bq-points" type="number" min="1" value="1"></div>
+        <div></div>
+      </div>
+      <div class="fg"><label>Question Text *</label><textarea id="bq-text" rows="2"></textarea></div>
+      ${rQuestionTypeFields("bq", curType)}`;
+      })()}
+      <button class="btn btn-p btn-full" style="margin-top:8px" onclick="saveBankQuestion()">Save to Bank</button>
+    </div>
+
+    <h3>Saved Questions (${filtered.length})</h3>
+    ${filtered.length===0?`<div class="empty"><div class="ei">📚</div><h4>Bank is empty</h4><p>Add your first reusable question above.</p></div>`:`
+      <div style="display:grid;gap:10px;margin-top:12px">
+      ${[...filtered].reverse().map(bq=>{
+        const typeLabel={mcq:"🔘 MCQ",tf:"✓✗ T/F",fib:"___ FIB",short:"✏️ Short",essay:"📝 Essay"}[bq.type];
+        return `<div class="panel" style="padding:14px"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="flex:1"><p style="margin-bottom:4px"><strong>${escapeHtml(bq.text)}</strong></p><p style="font-size:11.5px;color:var(--mt)">${typeLabel} · ${bq.points}pt · ${bq.course||"Any course"}</p></div><button class="btn btn-d btn-sm" onclick="deleteBankQuestion('${bq.id}')">🗑️</button></div></div>`;
+      }).join("")}
+      </div>
+    `}
+  </div>`;
+}
+
+function rSubmissionsPage(){
+  if(S.gradingSub){return rGradeSubmission();}
+  const allSubs=[...S.data.testSubs].sort((a,b)=>(b.submittedAt||0)-(a.submittedAt||0));
+  if(allSubs.length===0){
+    return `<div class="empty"><div class="ei">✅</div><h4>No submissions yet</h4><p>Once students submit tests they will appear here.</p></div>`;
+  }
+  // Group by test
+  const byTest={};
+  allSubs.forEach(s=>{
+    if(!byTest[s.testId])byTest[s.testId]=[];
+    byTest[s.testId].push(s);
+  });
+  return `<div>${Object.entries(byTest).map(([tid,subs])=>{
+    const test=S.data.tests.find(t=>t.id===tid);
+    const title=test?.title||subs[0].testTitle||"(deleted test)";
+    return `<div class="panel" style="margin-bottom:18px">
+      <h3>${escapeHtml(title)}</h3>
+      <p class="cm" style="margin-bottom:12px">${subs.length} submission${subs.length===1?"":"s"} · ${test?.course||""}</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="text-align:left;border-bottom:2px solid var(--p3)">
+          <th style="padding:8px">Student</th><th style="padding:8px">Matric</th>
+          <th style="padding:8px">Submitted</th><th style="padding:8px">Time</th>
+          <th style="padding:8px">Auto</th><th style="padding:8px">Manual</th>
+          <th style="padding:8px">Total</th><th style="padding:8px">Status</th><th></th>
+        </tr></thead><tbody>
+        ${subs.map(s=>{
+          const submitDate=new Date(s.submittedAt||0).toLocaleString("en-NG",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+          const mins=Math.floor((s.timeUsedSecs||0)/60),secs=(s.timeUsedSecs||0)%60;
+          const statusColor=s.status==="graded"?"var(--su)":"var(--g1)";
+          return `<tr style="border-bottom:1px solid var(--br)">
+            <td style="padding:8px"><strong>${escapeHtml(s.studentName||"")}</strong></td>
+            <td style="padding:8px">${escapeHtml(s.studentMatric||"")}</td>
+            <td style="padding:8px">${submitDate}</td>
+            <td style="padding:8px">${mins}:${secs<10?"0":""}${secs}</td>
+            <td style="padding:8px">${s.autoScore}/${s.maxAuto}</td>
+            <td style="padding:8px">${s.maxManual>0?(s.manualScore||0)+"/"+s.maxManual:"—"}</td>
+            <td style="padding:8px"><strong>${s.totalScore}/${s.maxTotal}</strong></td>
+            <td style="padding:8px;color:${statusColor};font-weight:600;text-transform:uppercase;font-size:11px">${s.status==="graded"?"✓ Graded":"⏳ Pending"}</td>
+            <td style="padding:8px">${s.maxManual>0?`<button class="btn btn-o btn-sm" onclick="S.gradingSub='${s.id}';render()">${s.status==="graded"?"View":"Grade"}</button>`:`<button class="btn btn-gh btn-sm" onclick="S.gradingSub='${s.id}';render()">View</button>`}</td>
+          </tr>`;
+        }).join("")}
+      </tbody></table>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function rGradeSubmission(){
+  const sub=S.data.testSubs.find(s=>s.id===S.gradingSub);
+  if(!sub)return `<div><button class="btn btn-gh btn-sm" onclick="S.gradingSub=null;render()">← Back</button><p>Submission not found.</p></div>`;
+  const test=S.data.tests.find(t=>t.id===sub.testId);
+  if(!test)return `<div><button class="btn btn-gh btn-sm" onclick="S.gradingSub=null;render()">← Back</button><p>Test not found.</p></div>`;
+  return `<div>
+    <button class="btn btn-gh btn-sm" onclick="S.gradingSub=null;render()">← Back to Submissions</button>
+    <div class="panel" style="margin-top:14px">
+      <h3>${escapeHtml(sub.studentName)} — ${escapeHtml(test.title)}</h3>
+      <p class="cm">Matric: ${escapeHtml(sub.studentMatric)} · Submitted: ${new Date(sub.submittedAt).toLocaleString("en-NG")}</p>
+      <p style="margin-top:8px">Auto: <strong>${sub.autoScore}/${sub.maxAuto}</strong> · Manual: <strong>${sub.manualScore||0}/${sub.maxManual}</strong> · Total: <strong style="color:var(--p2);font-size:18px">${sub.totalScore}/${sub.maxTotal}</strong></p>
+    </div>
+    <div style="display:grid;gap:14px;margin-top:14px">
+    ${(test.questions||[]).map((q,i)=>{
+      const ans=sub.answers[q.id];
+      const grade=sub.grades?.[q.id];
+      const manualGrade=sub.manualGrades?.[q.id];
+      const typeLabel={mcq:"🔘 MCQ",tf:"✓✗ T/F",fib:"___ FIB",short:"✏️ Short",essay:"📝 Essay"}[q.type];
+      let ansDisplay="";
+      if(q.type==="mcq"){
+        ansDisplay=ans!==undefined?`<strong>${escapeHtml(q.options[ans]||"(no answer)")}</strong> — Correct: ${escapeHtml(q.options[q.correct])}`:"<em>No answer</em>";
+      } else if(q.type==="tf"){
+        ansDisplay=ans!==undefined?`<strong>${ans?"True":"False"}</strong> — Correct: ${q.correct?"True":"False"}`:"<em>No answer</em>";
+      } else if(q.type==="fib"){
+        ansDisplay=ans?`<strong>${escapeHtml(ans)}</strong> — Accepted: ${q.accepts.map(escapeHtml).join(" / ")}`:"<em>No answer</em>";
+      } else {
+        ansDisplay=ans?`<div style="background:var(--ww);padding:10px;border-radius:6px;border:1px solid var(--br);margin-top:6px;white-space:pre-wrap">${escapeHtml(ans)}</div>`:"<em>No answer</em>";
+      }
+      const autoMark=grade?.autoGraded?(grade.correct?`<span style="color:var(--su);font-weight:600">✓ Correct (+${grade.points})</span>`:`<span style="color:var(--er);font-weight:600">✗ Incorrect (0 pts)</span>`):"";
+      const isManual=q.type==="short"||q.type==="essay";
+      return `<div class="panel">
+        <p><strong>Q${i+1}.</strong> <span style="font-size:11px;color:var(--mt);margin-left:6px">${typeLabel} · ${q.points} pt${q.points===1?"":"s"}</span></p>
+        <p style="margin-top:4px">${escapeHtml(q.text)}</p>
+        <div style="margin-top:8px">${ansDisplay}</div>
+        ${autoMark?`<p style="margin-top:8px">${autoMark}</p>`:""}
+        ${isManual?`<div style="border-top:1px solid var(--br);margin-top:12px;padding-top:12px">
+          <div class="g2">
+            <div class="fg"><label>Points (out of ${q.points})</label><input id="mg-pts-${q.id}" type="number" min="0" max="${q.points}" value="${manualGrade?.points??""}"></div>
+            <div></div>
+          </div>
+          <div class="fg"><label>Feedback for student (optional)</label><textarea id="mg-fb-${q.id}" rows="2">${escapeHtml(manualGrade?.feedback||"")}</textarea></div>
+        </div>`:""}
+      </div>`;
+    }).join("")}
+    </div>
+    ${(test.questions||[]).some(q=>q.type==="short"||q.type==="essay")?`<button class="btn btn-p btn-full" style="margin-top:14px" onclick="saveManualGrade('${sub.id}')">💾 Save Grades & Mark as Graded</button>`:""}
+  </div>`;
+}
+
+function rTestsStudent(){
+  const myUid=S.user.id||fbAuth.currentUser?.uid||"unknown";
+  // Find courses this student is in via ROSTER
+  const myCourses=COURSES.filter(c=>ROSTER.some(r=>r.matric===S.user.matric&&r.course===c.code));
+  const courseCodes=myCourses.length>0?myCourses.map(c=>c.code):COURSES.map(c=>c.code);
+  const myTests=S.data.tests.filter(t=>t.published && courseCodes.includes(t.course));
+  const mySubs=S.data.testSubs.filter(s=>s.studentUid===myUid);
+  if(myTests.length===0){
+    return `<div class="empty"><div class="ei">🧪</div><h4>No tests available</h4><p>Your lecturer hasn't published any tests yet. Check back later.</p></div>`;
+  }
+  const now=Date.now();
+  return `<div style="display:grid;gap:14px">
+  ${myTests.map(t=>{
+    const mySub=mySubs.find(s=>s.testId===t.id);
+    const totalPts=(t.questions||[]).reduce((a,q)=>a+(q.points||0),0);
+    const openAtMs=t.openAt?new Date(t.openAt).getTime():0;
+    const closeAtMs=t.closeAt?new Date(t.closeAt).getTime():0;
+    const notOpenYet=openAtMs && openAtMs>now;
+    const closed=closeAtMs && closeAtMs<now;
+    let status="", action="";
+    if(mySub){
+      const showScore=mySub.status==="graded"||mySub.maxManual===0;
+      status=`<span style="background:var(--su);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:600">✓ SUBMITTED</span>`;
+      action=`<div style="margin-top:10px;padding:12px;background:var(--cr);border-radius:8px"><p style="font-size:14px"><strong>Your score:</strong> ${showScore?mySub.totalScore+"/"+mySub.maxTotal:mySub.autoScore+"/"+mySub.maxAuto+" (auto)"}</p>${mySub.maxManual>0&&mySub.status!=="graded"?`<p style="font-size:12px;color:var(--mt);margin-top:4px">${mySub.maxManual} pts pending manual review by lecturer</p>`:""}</div>`;
+    } else if(notOpenYet){
+      status=`<span style="background:var(--g2);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:600">⏰ NOT YET OPEN</span>`;
+      action=`<p style="font-size:13px;color:var(--mt);margin-top:8px">Opens: ${new Date(t.openAt).toLocaleString("en-NG")}</p>`;
+    } else if(closed){
+      status=`<span style="background:var(--er);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:600">❌ CLOSED</span>`;
+      action=`<p style="font-size:13px;color:var(--mt);margin-top:8px">Closed on ${new Date(t.closeAt).toLocaleString("en-NG")}</p>`;
+    } else {
+      status=`<span style="background:var(--p2);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:600">🔓 AVAILABLE</span>`;
+      action=`<button class="btn btn-p" style="margin-top:10px" onclick="startTakingTest('${t.id}')">Start Test →</button>`;
+    }
+    return `<div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div style="flex:1;min-width:240px">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+            <h3 style="margin:0">${escapeHtml(t.title)}</h3>${status}
+          </div>
+          <p class="cm">📘 ${t.course} · ${(t.questions||[]).length} questions · ${totalPts} pts ${t.duration?"· ⏱️ "+t.duration+" min limit":"· No time limit"}</p>
+          ${t.instructions?`<p style="font-size:13px;color:var(--mt);margin-top:8px">${escapeHtml(t.instructions)}</p>`:""}
+          ${action}
+        </div>
+      </div>
+    </div>`;
+  }).join("")}
+  </div>`;
+}
+
+function rTakeTest(){
+  const t=S.data.tests.find(x=>x.id===S.activeTest);
+  if(!t)return `<div class="empty"><div class="ei">❓</div><h4>Test not found</h4></div>`;
+  return `<div>
+    <div style="position:sticky;top:0;background:var(--ww);border-bottom:1.5px solid var(--p3);padding:14px 0;margin-bottom:20px;z-index:10">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div><h3 style="margin:0;color:var(--p1)">${escapeHtml(t.title)}</h3><p style="font-size:12px;color:var(--mt);margin-top:2px">${t.course} · ${(t.questions||[]).length} questions</p></div>
+        ${t.duration?`<div style="text-align:right"><div style="font-size:11px;color:var(--mt);text-transform:uppercase;letter-spacing:.5px">Time Remaining</div><div id="test-timer" style="font-size:28px;font-weight:700;color:var(--p2);font-family:'Cormorant Garamond',serif">${t.duration}:00</div></div>`:""}
+      </div>
+    </div>
+    ${t.instructions?`<div class="nbox pur" style="margin-bottom:18px"><strong>Instructions:</strong> ${escapeHtml(t.instructions)}</div>`:""}
+    <div style="display:grid;gap:16px">
+    ${(t.questions||[]).map((q,i)=>{
+      let body="";
+      if(q.type==="mcq"){
+        body=q.options.map((o,oi)=>`<label style="display:flex;gap:10px;padding:10px 14px;border:1.5px solid var(--br);border-radius:8px;margin-top:6px;cursor:pointer;background:var(--ww)"><input type="radio" name="ans-${q.id}" value="${oi}" onchange="recordAnswer('${q.id}',${oi})"><span>${escapeHtml(o)}</span></label>`).join("");
+      } else if(q.type==="tf"){
+        body=`<div style="display:flex;gap:10px;margin-top:8px">
+          <label style="flex:1;display:flex;gap:10px;padding:12px;border:1.5px solid var(--br);border-radius:8px;cursor:pointer;background:var(--ww);justify-content:center"><input type="radio" name="ans-${q.id}" value="true" onchange="recordAnswer('${q.id}',true)"><span>True</span></label>
+          <label style="flex:1;display:flex;gap:10px;padding:12px;border:1.5px solid var(--br);border-radius:8px;cursor:pointer;background:var(--ww);justify-content:center"><input type="radio" name="ans-${q.id}" value="false" onchange="recordAnswer('${q.id}',false)"><span>False</span></label>
+        </div>`;
+      } else if(q.type==="fib"){
+        body=`<input id="ans-${q.id}" placeholder="Type your answer here..." oninput="recordAnswer('${q.id}',this.value)" style="margin-top:8px">`;
+      } else if(q.type==="short"){
+        body=`<textarea id="ans-${q.id}" rows="2" placeholder="Type your answer (1-2 sentences)..." oninput="recordAnswer('${q.id}',this.value)" style="margin-top:8px"></textarea>`;
+      } else {
+        body=`<textarea id="ans-${q.id}" rows="6" placeholder="Write your essay answer here..." oninput="recordAnswer('${q.id}',this.value)" style="margin-top:8px"></textarea>`;
+      }
+      return `<div class="panel"><p><strong>Q${i+1}.</strong> <span style="font-size:11px;color:var(--mt);margin-left:6px">${q.points} pt${q.points===1?"":"s"}</span></p><p style="margin-top:4px;font-size:15px">${escapeHtml(q.text)}</p>${body}</div>`;
+    }).join("")}
+    </div>
+    <button class="btn btn-p btn-full" style="margin-top:20px;font-size:16px;padding:14px" onclick="submitTest(false)">📤 Submit Test</button>
+  </div>`;
 }
 
 // ── ANNOUNCEMENTS ────────────────────────────────────────────
@@ -1680,27 +2967,29 @@ function rProfile(){
 
 // ── HOW TO ───────────────────────────────────────────────────
 function rHowTo(){
-  return `<div>
-  <div class="nbox">⚠️ This portal stores data in each user's own browser. To share it with students on their phones and laptops, follow Stage 2 below. The process is free and takes about 10 minutes.</div>
-  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">📋 Your Lecturer Login</h4>
-    ${[["Email",CFG.email],["Password","Theatre@LASUED26"],["Access level","Full admin — all courses, grading, attendance, announcements"]].map(([k,v])=>`<div class="prow"><span>${k}</span><span><code style="background:var(--cr);padding:2px 7px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--p2)">${v}</code></span></div>`).join("")}
-  </div>
-  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">🌐 Share with Students (Free, 10 min)</h4>
-    ${[["1","Find your downloaded file","Look for <code>LASUED_Theatre_Portal_v4.html</code> in your Downloads folder."],["2","Go to netlify.com/drop","Open your browser and visit <code>netlify.com/drop</code>. No account needed."],["3","Drag the file onto the page","Drag your HTML file onto the Netlify page. It uploads in seconds."],["4","Copy your link","Netlify gives you a free link like <code>amazing-name-123.netlify.app</code>."],["5","Share with students","Send via WhatsApp or write on the board. Students open it on any device."]].map(([n,h,p])=>`<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--br)"><div style="width:28px;height:28px;border-radius:50%;background:var(--p2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px">${n}</div><div><h5 style="font-size:14px;font-weight:600;margin-bottom:3px">${h}</h5><p style="font-size:13px;color:var(--mt);line-height:1.6">${p}</p></div></div>`).join("")}
-  </div>
-  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">📚 Pre-Loaded Student Lists</h4>
-    ${[["THA 125","64 students pre-loaded","251105010001–064","✅"],["THA 222","60 students pre-loaded","231105010001–060","✅"],["THA 302","Pending — upload your list","","⏳"],["THA 326","Pending — upload your list","","⏳"],["THA 404","Pending — upload your list","","⏳"],["THA 422","Pending — upload your list","","⏳"]].map(([c,d,m,s])=>`<div class="prow"><span>${c}</span><span>${s} ${d}${m?" ("+m+")":""}</span></div>`).join("")}
-    <p style="font-size:12.5px;color:var(--mt);margin-top:12px">To add students for THA 302, 326, 402, and 422: paste or upload the lists in your Claude conversation and they will be added in the same format.</p>
-  </div>
-  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">📋 About the Attendance System</h4>
-    <p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:10px"><strong>How it works:</strong> At the start of class, go to the course page → Attendance tab → "Open Session". A unique 6-character code is generated. Show it on your screen or write it on the board. Students who are present enter the code on their devices. Within ${CFG.graceMins} minutes = <strong>Present</strong>; after that = <strong>Late</strong>.</p>
-    <p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:10px"><strong>Anti-proxy protection:</strong> Each student must be logged into their own account. The system records who marked, when, and whether the code was correct. A student cannot mark twice in one session. The code changes every session.</p>
-    <p style="font-size:13px;color:#555;line-height:1.75"><strong>Limitation:</strong> Since data is stored per-device, student self-marks are on their own browser. The lecturer can also manually mark the full register from their device (the "P/L/A" buttons). For fully shared real-time data, request Firebase integration.</p>
-  </div>
-  <div class="panel"><h4 style="font-size:18px;color:var(--p1);margin-bottom:12px">📂 Migrating Previously Generated Materials</h4>
-    <p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:10px">All documents generated in your previous Claude sessions (syllabi, handouts, group briefs, rubrics, etc.) are listed in each course's Materials tab as <em>"Pending upload"</em> items — so you know exactly what to upload and where it belongs.</p>
-    <p style="font-size:13px;color:#555;line-height:1.75"><strong>To upload:</strong> Open the course (e.g. THA 125) → Materials tab → drag your file into the upload zone. The file is saved in your browser. For files over 4 MB, upload them to Google Drive and add the link instead.</p>
-  </div>
+  const url=CFG.portalURL;
+  return`<div>
+    <div class="panel" style="border-left:4px solid var(--p2);margin-bottom:20px">
+      <h3 style="margin:0;color:var(--p2)">Your Portal is Live 🌐</h3>
+      <p style="margin-top:8px;font-size:15px;font-weight:600;color:var(--p1);word-break:break-all">${url}</p>
+      <p style="font-size:13px;color:var(--mt);margin-top:6px">This is your permanent address. Share it with students via WhatsApp, write it on the board, or paste it in your course outline.</p>
+      <button class="btn btn-p btn-sm" style="margin-top:10px" onclick="navigator.clipboard.writeText('${url}').then(()=>notify('✓ URL copied to clipboard!'))">📋 Copy URL</button>
+    </div>
+    <div class="panel">
+      <h3>How Students Join</h3>
+      ${[["1","Student opens the URL","They type or tap <strong>"+url+"</strong> in any browser on any device — phone, tablet, or laptop."],
+        ["2","Student clicks 'Create Your Account'","They register with their real name, matric number, and any email. They choose their own password."],
+        ["3","Student signs in","From that moment, they can mark attendance, take tests, and see their results from any device."],
+        ["4","You share the URL once","After that, students bookmark it. You never need to send a file again."]
+      ].map(([n,h,p])=>`<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--br)">
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--p2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">${n}</div>
+        <div><h5 style="font-size:14px;font-weight:600;margin-bottom:4px">${h}</h5><p style="font-size:13px;color:var(--mt);line-height:1.6">${p}</p></div>
+      </div>`).join("")}
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <h3>Moving to a New Institution?</h3>
+      <p style="font-size:13px;color:var(--mt);line-height:1.6">Your portal travels with you. To reuse it at a new institution, just update the course list, student roster, and your email at the top of the <code>index.html</code> file. All the architecture — Firebase, attendance, tests, scores — stays the same. Your data remains in your Firebase account and belongs to you.</p>
+    </div>
   </div>`;
 }
 
@@ -1721,6 +3010,7 @@ function rSidebar(){
       <div class="ns"><div class="nst">Academic</div>
         <div class="ni ${pg==="forum"?"on":""}" onclick="nav('forum')">💬 Forum</div>
         <div class="ni ${pg==="assignments"?"on":""}" onclick="nav('assignments')">📝 Assignments</div>
+        <div class="ni ${pg==="tests"?"on":""}" onclick="nav('tests')">🧪 Tests</div>
         <div class="ni ${pg==="attendance"?"on":""}" onclick="nav('attendance')">📋 Attendance</div>
         ${S.role==="lecturer"?`<div class="ni ${pg==="grading"?"on":""}" onclick="nav('grading')">✏️ Grading ${pendG()>0?'<span class="bx">'+pendG()+'</span>':""}</div>`:""}
         <div class="ni ${pg==="results"?"on":""}" onclick="nav('results')">📊 Results</div>
@@ -1737,19 +3027,20 @@ function rSidebar(){
 
 function rMain(){
   const pg=S.pg;
-  const titles={dashboard:"Dashboard",courses:"All Courses",forum:"Forum",assignments:"Assignments",grading:"Grading Portal",results:"Results",announcements:"Announcements",attendance:"Attendance",feedback:"My Feedback",profile:"My Profile",howto:"Share Portal",course:S.course||""};
+  const titles={dashboard:"Dashboard",courses:"All Courses",forum:"Forum",assignments:"Assignments",grading:"Grading Portal",results:"Results",announcements:"Announcements",attendance:"Attendance",tests:"Tests",takeTest:"Taking Test",feedback:"My Feedback",profile:"My Profile",howto:"Share Portal",course:S.course||""};
   return `<div class="topbar"><button class="mb" onclick="togSB()">☰</button><h2>${titles[pg]||""}</h2>${["dashboard","courses"].includes(pg)?`<div class="sbar"><span>🔍</span><input placeholder="Search..." value="${S.search}" oninput="S.search=this.value;render()"></div>`:""}</div>
     <div class="content">${
       pg==="dashboard"?rDash():pg==="courses"?rCourses():pg==="course"?rCoursePg():
       pg==="forum"?rForum():pg==="assignments"?rAssignPg():pg==="attendance"?rAttPage():
+      pg==="tests"?rTests():pg==="takeTest"?rTakeTest():
       pg==="grading"?rGrading():pg==="results"?rResults():pg==="announcements"?rAnnounce():
       pg==="feedback"?rMyFeedback():pg==="profile"?rProfile():pg==="howto"?rHowTo():""
     }</div>`;
 }
 
 
-// ── KIOSK MODE: Mark attendance by name/matric lookup (no login needed) ────
-function kioskMark(courseCode){
+// ── KIOSK MODE: Mark attendance by name/matric lookup (lecturer's device passed around) ────
+async function kioskMark(courseCode){
   try {
     var nameEl = document.getElementById("kiosk-name");
     var codeEl = document.getElementById("kiosk-code");
@@ -1762,8 +3053,9 @@ function kioskMark(courseCode){
     if(!enteredCode){ alert("Please enter the session code"); codeEl.focus(); return; }
     
     var k = ck(courseCode);
-    var sess = (S.data.attendance[k]||[]).find(function(s){ return s.open && s.code === enteredCode; });
-    if(!sess){ alert("Invalid or expired code. Check the code displayed by the lecturer."); return; }
+    var sess = (S.data.attendance[k]||[]).find(function(s){ return s.open; });
+    if(!sess){ alert("No open session found. Open an attendance session first."); return; }
+    if(!isValidCode(sess, enteredCode)){ alert("Invalid or expired code. Check the code displayed by the lecturer."); return; }
     
     // Find student by matric OR by name (case insensitive)
     var nameLower = nameOrMatric.toLowerCase();
@@ -1774,19 +3066,25 @@ function kioskMark(courseCode){
         (u.matric && u.matric.toLowerCase() === nameLower)
       );
     });
+    // Also check ROSTER if not in S.data.users
+    if(!student){
+      var rEntry = ROSTER.find(function(r){
+        return r.course===courseCode && (r.matric===nameOrMatric || r.name.toLowerCase().includes(nameLower));
+      });
+      if(rEntry) student = {name:rEntry.name, matric:rEntry.matric};
+    }
     
     var studentName, studentMatric;
     if(student){
       studentName = student.name;
       studentMatric = student.matric;
     } else {
-      // Allow walk-ins - use what they typed
       studentName = nameOrMatric;
       studentMatric = "";
     }
     
     // Check if already marked
-    var existing = sess.records.find(function(r){ 
+    var existing = (sess.records||[]).find(function(r){ 
       return r.student === studentName || (studentMatric && r.matric === studentMatric); 
     });
     if(existing && existing.status){ 
@@ -1795,32 +3093,37 @@ function kioskMark(courseCode){
       return; 
     }
     
-    // Determine status
     var elapsed = (Date.now() - sess.openedAt) / 1000 / 60;
     var status = elapsed <= sess.graceMins ? "present" : "late";
+    var mark = {student:studentName, matric:studentMatric, status:status, time:dateNow(), selfMarked:true};
     
-    // Mark the student
+    // Write to Firestore
+    if(fbReady && fbDB){
+      try{
+        var key = studentMatric || ("k_" + studentName.replace(/\W/g,"_"));
+        await fbDB.collection("att_sessions").doc(attDocId(k, sess.id)).update({["marks."+key]: mark});
+      }catch(fe){ console.warn("Firestore kiosk mark failed:", fe); }
+    }
+    
+    // Update local state
     S.data.attendance[k] = S.data.attendance[k].map(function(s){
       if(s.id !== sess.id) return s;
       var found = false;
-      var recs = s.records.map(function(r){
+      var recs = (s.records||[]).map(function(r){
         if(r.student === studentName || (studentMatric && r.matric === studentMatric)){
           found = true;
-          return Object.assign({}, r, {status:status, time:dateNow(), selfMarked:true});
+          return Object.assign({}, r, mark);
         }
         return r;
       });
-      if(!found) recs.push({student:studentName, matric:studentMatric, status:status, time:dateNow(), selfMarked:true});
+      if(!found) recs.push(mark);
       return Object.assign({}, s, {records:recs});
     });
     
     saveAtt(courseCode);
     
-    // Clear form for next student
-    nameEl.value = ""; 
-    codeEl.value = "";
+    nameEl.value = ""; codeEl.value = "";
     
-    // Show confirmation
     var msg = "✅ " + studentName + " marked " + status.toUpperCase();
     if(status === "late") msg += " (" + Math.round(elapsed) + " min late)";
     alert(msg + "\n\nReady for next student. Pass the device.");
@@ -1847,6 +3150,14 @@ function render(){
   const mnEl=document.getElementById("MN");
   if(sbEl) sbEl.innerHTML=rSidebar();
   if(mnEl) mnEl.innerHTML=rMain();
+  // Auto-start attendance code timer if we're displaying an open session
+  if(S.role==="lecturer" && (S.pg==="course"||S.pg==="attendance") && S.course){
+    const k=ck(S.course);
+    const openSess=(S.data.attendance[k]||[]).find(s=>s.open);
+    if(openSess && document.getElementById("live-code")){
+      startCodeTimer(S.course, openSess.id);
+    }
+  }
 }
 window.addEventListener("DOMContentLoaded",()=>{
 // ════════════════════════════════════════════════════════════════════════════
@@ -1862,6 +3173,15 @@ if(fbReady && fbAuth){
           S.role = S.user.role || "student";
           S.pg = "dashboard";
           render();
+          startAnnListener();
+          await loadAttFromFirestore();
+          startAttListeners();
+          await loadTestsFromFirestore();
+          await loadTestSubsFromFirestore();
+          if(S.role==="lecturer")await loadQbankFromFirestore();
+          startTestListeners();
+          await loadScoresFromFirestore();
+          startScoresListener();
           console.log("✓ Session restored for", S.user.name);
         }
       } catch(err){
@@ -1869,6 +3189,82 @@ if(fbReady && fbAuth){
       }
     }
   });
+
+// ════════════════════════════════════════════════════════════════════════════
+// FIRESTORE REAL-TIME LISTENERS (Milestone C: Announcements)
+// ════════════════════════════════════════════════════════════════════════════
+let fbAnnUnsub = null;
+function startAnnListener(){
+  if(!fbReady || !fbDB || !S.user) return;
+  if(fbAnnUnsub){ try{fbAnnUnsub();}catch(e){} fbAnnUnsub = null; }
+  fbAnnUnsub = fbDB.collection("announcements")
+    .orderBy("createdAt","desc")
+    .onSnapshot(function(snapshot){
+      const anns = [];
+      snapshot.forEach(function(doc){
+        anns.push(doc.data());
+      });
+      S.data.announcements = anns;
+      if(S.pg==="dashboard" || S.pg==="announcements"){
+        render();
+      }
+      console.log("✓ Announcements synced:", anns.length);
+    }, function(err){
+      console.error("Ann listener error:", err);
+    });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// FIRESTORE REAL-TIME LISTENERS (Milestone D: Attendance)
+// ════════════════════════════════════════════════════════════════════════════
+let _attListeners = {};
+
+function startAttListeners(){
+  if(!fbReady || !fbDB || !S.user) return;
+  COURSES.forEach(function(course){
+    const k = ck(course.code);
+    if(_attListeners[k]) return; // already listening
+    const unsub = fbDB.collection("att_sessions")
+      .where("courseKey","==",k)
+      .onSnapshot(function(snapshot){
+        if(!S.data.attendance[k]) S.data.attendance[k] = [];
+        snapshot.docChanges().forEach(function(change){
+          const d = change.doc.data();
+          const enrolled = enrolledForCourse(course.code);
+          const records = marksToRecords(d.marks || {}, enrolled);
+          const sess = {id:d.id, date:d.date, topic:d.topic, openedAt:d.openedAt,
+            graceMins:d.graceMins, open:d.open, closedAt:d.closedAt, manual:d.manual||false, records};
+          const idx = S.data.attendance[k].findIndex(s => s.id === d.id);
+          if(change.type === "removed"){
+            if(idx >= 0) S.data.attendance[k].splice(idx, 1);
+          } else {
+            if(idx >= 0) S.data.attendance[k][idx] = sess;
+            else { S.data.attendance[k].unshift(sess); S.data.attendance[k].sort((a,b)=>b.id-a.id); }
+          }
+        });
+        saveAtt(course.code);
+        // Re-render if on attendance-related page
+        const onAttPage = S.pg==="attendance" || (S.pg==="course" && S.tab==="attendance");
+        if(onAttPage) render();
+        console.log("✓ Attendance synced for", k);
+      }, function(err){
+        console.warn("Att listener error for " + k + ":", err);
+      });
+    _attListeners[k] = unsub;
+  });
+}
+
+function stopAllListeners(){
+  if(fbAnnUnsub){ try{fbAnnUnsub();}catch(e){} fbAnnUnsub = null; }
+  Object.values(_attListeners).forEach(function(u){ try{u();}catch(e){} });
+  _attListeners = {};
+  if(fbTestsUnsub){try{fbTestsUnsub();}catch(e){}fbTestsUnsub=null;}
+  if(fbSubsUnsub){try{fbSubsUnsub();}catch(e){}fbSubsUnsub=null;}
+  if(fbQbankUnsub){try{fbQbankUnsub();}catch(e){}fbQbankUnsub=null;}
+  if(fbScoresUnsub){try{fbScoresUnsub();}catch(e){}fbScoresUnsub=null;}
+}
+
+
 }
 
 loadAll();render();});
